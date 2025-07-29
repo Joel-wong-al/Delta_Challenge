@@ -11,6 +11,10 @@ public class CameraSystem : MonoBehaviour
     [SerializeField] private bool CamerasOpen;
 
     [SerializeField] private GameObject MainCamera;
+
+    [SerializeField] private float CoolDownTimer;
+
+    [SerializeField] private float CoolDownTime = 0.5f;
     void Start()
     {
         for (int i = 0; i < Cameras.Length; i++)
@@ -28,25 +32,36 @@ public class CameraSystem : MonoBehaviour
             CamerasOpen = !CamerasOpen;
             ShowCamera();
         }
-        if (Input.GetAxis("Horizontal") > 0)
+
+        if (CoolDownTimer > 0)
         {
-            Cameras[CurrentCameraIndex].SetActive(false);
-            CurrentCameraIndex += CurrentCameraIndex + 1;
-            if (CurrentCameraIndex >= Cameras.Length)
+            if (Input.GetAxis("Horizontal") > 0)
             {
-                CurrentCameraIndex = 0; // Loop back to the first camera
+                Cameras[CurrentCameraIndex].SetActive(false);
+                CurrentCameraIndex += CurrentCameraIndex + 1;
+                if (CurrentCameraIndex >= Cameras.Length)
+                {
+                    CurrentCameraIndex = 0; // Loop back to the first camera
+                }
+                GotoCamera(CurrentCameraIndex);
+                CoolDownTimer = CoolDownTime;
             }
-            GotoCamera(CurrentCameraIndex);
+            else if (Input.GetAxis("Horizontal") < 0)
+            {
+                CurrentCameraIndex += CurrentCameraIndex - 1;
+                if (CurrentCameraIndex < 0)
+                {
+                    CurrentCameraIndex = Cameras.Length - 1; // Loop back to the first camera
+                }
+                GotoCamera(CurrentCameraIndex);
+                CoolDownTimer = CoolDownTime;
+            }
         }
-        else if (Input.GetAxis("Horizontal") < 0)
+        else
         {
-            CurrentCameraIndex += CurrentCameraIndex - 1;
-            if (CurrentCameraIndex < 0)
-            {
-                CurrentCameraIndex = Cameras.Length - 1; // Loop back to the first camera
-            }
-            GotoCamera(CurrentCameraIndex);
+            CoolDownTimer -= Time.deltaTime;
         }
+
 
 
     }
