@@ -46,8 +46,9 @@ public class CameraSystem : MonoBehaviour
                 GotoCamera(CurrentCameraIndex);
                 CoolDownTimer = CoolDownTime;
             }
-            else if (Input.GetAxis("Horizontal") < 0)
+            else if (Input.GetAxis("Horizontal") > 0)
             {
+                Cameras[CurrentCameraIndex].SetActive(false);
                 CurrentCameraIndex += CurrentCameraIndex - 1;
                 if (CurrentCameraIndex < 0)
                 {
