@@ -2,14 +2,17 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections;
 
-public class Theif : MonoBehaviour
+public class Thief : MonoBehaviour
 {
     NavMeshAgent myAgent;
 
-    [SerializeField] Transform targetTransform;
     [SerializeField] Transform[] restPoints;
     [SerializeField] float stopDistance = 0.5f;
     [SerializeField] float pauseTime = 3f;
+    [SerializeField] private Animator animator;
+    [SerializeField] private GameObject stealingSign;
+
+    public bool IsStealing { get; private set; } = false;
 
     private int currentPoint = 0;
     private string currentState;
@@ -35,23 +38,16 @@ public class Theif : MonoBehaviour
             StartCoroutine(Idle());
         else if (newState == "Moving")
             StartCoroutine(Moving());
-        else if (newState == "Chase")
-            StartCoroutine(Chase());
+        else if (newState == "Stealing")
+            StartCoroutine(Stealing());
+
     }
 
     IEnumerator Idle()
     {
         yield return new WaitForSeconds(pauseTime);
+        StartCoroutine(SwitchState("Moving"));
 
-        if (targetTransform != null)
-        {
-            Debug.Log("Switching to Chase");
-            StartCoroutine(SwitchState("Chase"));
-        }
-        else
-        {
-            StartCoroutine(SwitchState("Moving"));
-        }
     }
 
     IEnumerator Moving()
@@ -61,58 +57,46 @@ public class Theif : MonoBehaviour
 
         Transform destination = restPoints[currentPoint];
         myAgent.SetDestination(destination.position);
+        animator.SetBool("isWalking", true);
+        bool willSteal = false;
 
         while (currentState == "Moving")
         {
-            if (targetTransform != null)
-            {
-                Debug.Log("Player detected during patrol – switching to Chase");
-                StartCoroutine(SwitchState("Chase"));
-                yield break;
-            }
-
             if (!myAgent.pathPending && myAgent.remainingDistance <= stopDistance)
             {
-                currentPoint = (currentPoint + 1) % restPoints.Length;
-                StartCoroutine(SwitchState("Idle"));
-                yield break;
+                animator.SetBool("isWalking", false);
+                willSteal = Random.value < 0.4f;
+
+                if (willSteal)
+                {
+                    Debug.Log("Stealing from shelf");
+                    StartCoroutine(SwitchState("Stealing"));
+                }
+                else
+                {
+                    StartCoroutine(SwitchState("Idle"));
+                }
+                yield break; // prevent looping after switch
             }
 
             yield return null;
         }
     }
-
-    IEnumerator Chase()
+    IEnumerator Stealing()
     {
-        while (currentState == "Chase")
-        {
-            if (targetTransform == null)
-            {
-                Debug.Log("Lost player – returning to Idle");
-                StartCoroutine(SwitchState("Idle"));
-                yield break;
-            }
+        IsStealing = true; //  Start stealing state
 
-            myAgent.SetDestination(targetTransform.position);
-            yield return null;
-        }
+        animator.SetTrigger("steal");
+        stealingSign.SetActive(true);
+
+        yield return new WaitForSeconds(2f); // Stealing duration
+
+        IsStealing = false; //  Stop stealing state
+        stealingSign.SetActive(false);
+
+        currentPoint = (currentPoint + 1) % restPoints.Length;
+        StartCoroutine(SwitchState("Moving"));
     }
 
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            Debug.Log("Player entered detection zone");
-            targetTransform = other.transform;
-        }
-    }
 
-    void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            Debug.Log("Player left detection zone");
-            targetTransform = null;
-        }
-    }
 }

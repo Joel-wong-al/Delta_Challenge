@@ -2,16 +2,20 @@ using UnityEngine;
 
 public class NewMonoBehaviourScript1 : MonoBehaviour
 {
+    [SerializeField] private GameObject thiefPrefab;
+    [SerializeField] private Transform spawnPoint;
+    [SerializeField] private float spawnInterval = 10f;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
+    private float spawnTimer;
 
-    }
-
-    // Update is called once per frame
     void Update()
     {
-
+        spawnTimer += Time.deltaTime;
+        if (spawnTimer >= spawnInterval)
+        {
+            Instantiate(thiefPrefab, spawnPoint.position, Quaternion.identity);
+            spawnTimer = 0f;
+        }
     }
+
 }

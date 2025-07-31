@@ -25,8 +25,15 @@ public class PlayerBehaviour : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit, 100))// Check if the ray hits an object within 100 units
             {
-                Debug.Log("Hit: " + hit.collider.name);
-                // Add logic to interact with the object hit by the raycast
+                if (hit.collider.CompareTag("Thief")) // Check if the object hit is tagged as "Thief"
+                {
+                    Thief thiefScript = hit.collider.GetComponent<Thief>();
+                    if (thiefScript != null && thiefScript.IsStealing)
+                    {
+                        Debug.Log("Caught thief!");
+                        Destroy(hit.collider.gameObject);
+                    }
+                }
             }
         }
     }
