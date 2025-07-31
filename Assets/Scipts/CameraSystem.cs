@@ -15,6 +15,8 @@ public class CameraSystem : MonoBehaviour
     [SerializeField] private float CoolDownTimer;
 
     [SerializeField] private float CoolDownTime = 0.5f;
+
+    [SerializeField] private CameraBehaviour cameraBehaviour;
     void Start()
     {
         for (int i = 0; i < Cameras.Length; i++)
@@ -38,7 +40,7 @@ public class CameraSystem : MonoBehaviour
             if (Input.GetAxis("Horizontal") > 0)
             {
                 Cameras[CurrentCameraIndex].SetActive(false);
-                CurrentCameraIndex += CurrentCameraIndex + 1;
+                CurrentCameraIndex++;
                 if (CurrentCameraIndex >= Cameras.Length)
                 {
                     CurrentCameraIndex = 0; // Loop back to the first camera
@@ -46,10 +48,10 @@ public class CameraSystem : MonoBehaviour
                 GotoCamera(CurrentCameraIndex);
                 CoolDownTimer = CoolDownTime;
             }
-            else if (Input.GetAxis("Horizontal") > 0)
+            else if (Input.GetAxis("Horizontal") < 0)
             {
                 Cameras[CurrentCameraIndex].SetActive(false);
-                CurrentCameraIndex += CurrentCameraIndex - 1;
+                CurrentCameraIndex--;
                 if (CurrentCameraIndex < 0)
                 {
                     CurrentCameraIndex = Cameras.Length - 1; // Loop back to the first camera
@@ -86,5 +88,11 @@ public class CameraSystem : MonoBehaviour
         Cameras[CurrentCameraIndex].SetActive(false);
         CurrentCameraIndex = Progression;
         ShowCamera();
+
+        Camera camComponent = Cameras[CurrentCameraIndex].GetComponent<Camera>();
+        if (camComponent != null && cameraBehaviour != null)
+        {
+            cameraBehaviour.currentCam = camComponent;
+        }
     }
 }
