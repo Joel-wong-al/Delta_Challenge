@@ -144,4 +144,27 @@ public class CameraSystem : MonoBehaviour
             cameraBehaviour.currentCam = camComponent;
         }
     }
+
+    /// <summary>
+    /// Activates a specific camera from the Cameras array using its index.
+    /// Called by PlayerInteraction when a screen is clicked.
+    /// </summary>
+    /// <param name="index">Index of the camera to activate</param>
+    public void ActivateCameraByIndex(int index)
+    {
+        if (index >= 0 && index < Cameras.Length)
+        {
+            Cameras[CurrentCameraIndex].SetActive(false);
+            CurrentCameraIndex = index;
+            Cameras[CurrentCameraIndex].SetActive(true);
+            MainCamera.SetActive(false);
+            CamerasOpen = true;
+
+            Camera camComponent = Cameras[CurrentCameraIndex].GetComponent<Camera>();
+            if (camComponent != null && cameraBehaviour != null)
+            {
+                cameraBehaviour.currentCam = camComponent;
+            }
+        }
+    }
 }

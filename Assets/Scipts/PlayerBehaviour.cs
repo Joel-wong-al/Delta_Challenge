@@ -4,6 +4,8 @@ public class PlayerBehaviour : MonoBehaviour
 {
 
     Camera cam;// Reference to the main camera
+    [SerializeField] private Camera raycastCam; // Assign this to MainCamera in Inspector
+    [SerializeField] private float maxDistance = 100f;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -32,6 +34,25 @@ public class PlayerBehaviour : MonoBehaviour
                     {
                         Debug.Log("Caught thief!");
                         Destroy(hit.collider.gameObject);
+                    }
+                }
+            }
+        }
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = raycastCam.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, maxDistance))
+            {
+                Monitor screen = hit.collider.GetComponent<Monitor>();
+                if (screen != null)
+                {
+                    Debug.Log("Clicked screen for camera index: " + screen.cameraIndex);
+                    CameraSystem cameraSystem = FindObjectOfType<CameraSystem>();
+                    if (cameraSystem != null)
+                    {
+                        cameraSystem.ActivateCameraByIndex(screen.cameraIndex);
                     }
                 }
             }
