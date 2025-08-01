@@ -2,169 +2,237 @@
  * File: CameraSystem.cs
  * Author: Javier
  * Created: [Insert Date]
- * Description: Manages toggling between a set of CCTV-style cameras and the 
- *              main player camera. Handles switching, cooldowns, and updates
- *              the currently active camera for use in raycasting and interaction.
+ * Description: Manages switching between the main player camera and monitor cameras.
+ *              Players can click on Monitor objects to view their respective cameras,
+ *              and press ESC to return to the main camera view.
  ******************************************************************************/
 
 using UnityEngine;
+using StarterAssets;
+#if CINEMACHINE_TIMELINE
+using Cinemachine;
+#endif
 
 /// <summary>
-/// Handles a multi-camera system for gameplay monitoring.
-/// Supports toggling between CCTV cameras and switching with cooldown logic.
-/// Updates the CameraBehaviour to ensure accurate raycasting from the active camera.
+/// Handles switching between the main player camera and monitor cameras.
+/// Players click on Monitor objects to switch views and press ESC to return to main view.
 /// </summary>
 public class CameraSystem : MonoBehaviour
 {
     /// <summary>
-    /// Array of CCTV cameras available for switching.
+    /// The main player camera that players return to when pressing ESC.
     /// </summary>
-    [SerializeField] private GameObject[] Cameras;
+    [SerializeField] private Camera mainCamera;
 
     /// <summary>
-    /// Index of the currently active CCTV camera.
+    /// Array of monitor cameras that can be switched to.
     /// </summary>
-    [SerializeField] private int CurrentCameraIndex;
+    [SerializeField] private Camera[] monitorCameras;
 
     /// <summary>
-    /// Key used to toggle camera view (on/off).
+    /// Reference to the player GameObject to disable input components when viewing monitors.
     /// </summary>
-    [SerializeField] private KeyCode OpenCameras;
+    [SerializeField] private GameObject playerObject;
 
     /// <summary>
-    /// Whether the CCTV system is currently open.
+    /// Whether the player is currently viewing a monitor camera.
     /// </summary>
-    [SerializeField] private bool CamerasOpen;
+    private bool isViewingMonitor = false;
 
     /// <summary>
-    /// The main player camera to return to when not viewing CCTV.
+    /// Index of the currently active monitor camera (-1 if viewing main camera).
     /// </summary>
-    [SerializeField] private GameObject MainCamera;
+    private int currentMonitorIndex = -1;
 
-    /// <summary>
-    /// Timer used to throttle how fast the player can switch between cameras.
-    /// </summary>
-    [SerializeField] private float CoolDownTimer;
-
-    /// <summary>
-    /// The time to wait between allowed camera switches.
-    /// </summary>
-    [SerializeField] private float CoolDownTime = 0.5f;
-
-    /// <summary>
-    /// Reference to the CameraBehaviour script that handles raycasting from the current camera.
-    /// </summary>
-    [SerializeField] private CameraBehaviour cameraBehaviour;
-
-    /// <summary>
-    /// Initializes camera states by disabling all CCTV cameras and enabling the main player camera.
-    /// </summary>
     void Start()
     {
-        for (int i = 0; i < Cameras.Length; i++)
+        // Ensure main camera is active at start
+        if (mainCamera != null)
         {
-            Cameras[i].SetActive(false); // Initially deactivate all cameras
+            mainCamera.gameObject.SetActive(true);
         }
-        MainCamera.SetActive(true); // Start with the main camera enabled
+
+        // Ensure all monitor cameras are inactive at start
+        for (int i = 0; i < monitorCameras.Length; i++)
+        {
+            if (monitorCameras[i] != null)
+            {
+                monitorCameras[i].gameObject.SetActive(false);
+            }
+        }
     }
 
-    /// <summary>
-    /// Handles input for toggling the CCTV system and switching between cameras using horizontal input.
-    /// </summary>
     void Update()
     {
-        if (Input.GetKeyDown(OpenCameras))
+        // Check for F key to return to main camera
+        if (Input.GetKeyDown(KeyCode.F) && isViewingMonitor)
         {
-            CamerasOpen = !CamerasOpen;
-            ShowCamera();
+            ReturnToMainCamera();
+        }
+    }
+
+    /// <summary>
+    /// Switches to a monitor camera by index. Called when player clicks on a Monitor object.
+    /// </summary>
+    /// <param name="monitorIndex">Index of the monitor camera to switch to</param>
+    public void SwitchToMonitorCamera(int monitorIndex)
+    {
+        // Check if the index is valid
+        if (monitorIndex < 0 || monitorIndex >= monitorCameras.Length)
+        {
+            Debug.LogWarning($"CameraSystem: Invalid monitor index {monitorIndex}");
+            return;
         }
 
-        if (CoolDownTimer > 0)
+        // Check if the camera exists
+        if (monitorCameras[monitorIndex] == null)
         {
-            if (Input.GetAxis("Horizontal") > 0)
+            Debug.LogWarning($"CameraSystem: Monitor camera at index {monitorIndex} is null");
+            return;
+        }
+
+        // Deactivate main camera
+        if (mainCamera != null)
+        {
+            mainCamera.gameObject.SetActive(false);
+        }
+
+        // Deactivate any currently active monitor camera
+        if (isViewingMonitor && currentMonitorIndex >= 0 && currentMonitorIndex < monitorCameras.Length)
+        {
+            if (monitorCameras[currentMonitorIndex] != null)
             {
-                Cameras[CurrentCameraIndex].SetActive(false);
-                CurrentCameraIndex++;
-                if (CurrentCameraIndex >= Cameras.Length)
-                {
-                    CurrentCameraIndex = 0; // Loop back to the first camera
-                }
-                GotoCamera(CurrentCameraIndex);
-                CoolDownTimer = CoolDownTime;
+                monitorCameras[currentMonitorIndex].gameObject.SetActive(false);
             }
-            else if (Input.GetAxis("Horizontal") < 0)
-            {
-                Cameras[CurrentCameraIndex].SetActive(false);
-                CurrentCameraIndex--;
-                if (CurrentCameraIndex < 0)
-                {
-                    CurrentCameraIndex = Cameras.Length - 1; // Loop back to the last camera
-                }
-                GotoCamera(CurrentCameraIndex);
-                CoolDownTimer = CoolDownTime;
-            }
+        }
+
+        // Activate the selected monitor camera
+        monitorCameras[monitorIndex].gameObject.SetActive(true);
+        currentMonitorIndex = monitorIndex;
+        isViewingMonitor = true;
+
+        // Lock camera movement by disabling the player object
+        if (playerObject != null)
+        {
+            Debug.Log($"Stopping player movement and disabling player object: {playerObject.name}");
+            
+            // Stop all movement before disabling the player
+            StopPlayerMovement();
+            
+            // Then disable the GameObject
+            playerObject.SetActive(false);
+            Debug.Log("Player GameObject disabled - camera should be locked now");
         }
         else
         {
-            CoolDownTimer -= Time.deltaTime;
+            Debug.LogError("PlayerObject reference is not set! Camera movement will not be locked.");
         }
+
+        Debug.Log($"Switched to monitor camera: {monitorCameras[monitorIndex].name}");
     }
 
     /// <summary>
-    /// Activates the currently selected CCTV camera or returns to the main camera.
+    /// Returns to the main player camera. Called when player presses F.
     /// </summary>
-    private void ShowCamera()
+    public void ReturnToMainCamera()
     {
-        if (CamerasOpen)
+        // Deactivate current monitor camera if viewing one
+        if (isViewingMonitor && currentMonitorIndex >= 0 && currentMonitorIndex < monitorCameras.Length)
         {
-            Cameras[CurrentCameraIndex].SetActive(true);
-            MainCamera.SetActive(false);
+            if (monitorCameras[currentMonitorIndex] != null)
+            {
+                monitorCameras[currentMonitorIndex].gameObject.SetActive(false);
+            }
+        }
+
+        // Activate main camera
+        if (mainCamera != null)
+        {
+            mainCamera.gameObject.SetActive(true);
+        }
+
+        // Re-enable the player object
+        if (playerObject != null)
+        {
+            Debug.Log($"Re-enabling player object: {playerObject.name}");
+            playerObject.SetActive(true);
+            
+            // Clear any residual input after re-enabling
+            StopPlayerMovement();
+            
+            Debug.Log("Player GameObject re-enabled - camera should be unlocked now");
         }
         else
         {
-            Cameras[CurrentCameraIndex].SetActive(false);
-            MainCamera.SetActive(true); // Show the main camera when cameras are closed
+            Debug.LogError("PlayerObject reference is not set!");
         }
+
+        // Reset state
+        isViewingMonitor = false;
+        currentMonitorIndex = -1;
+
+        Debug.Log("Returned to main camera");
     }
 
     /// <summary>
-    /// Switches to a new camera based on index and updates CameraBehaviour to match.
+    /// Gets whether the player is currently viewing a monitor camera.
     /// </summary>
-    /// <param name="Progression">The index of the next camera to activate.</param>
-    private void GotoCamera(int Progression)
+    /// <returns>True if viewing a monitor camera, false if viewing main camera</returns>
+    public bool IsViewingMonitor()
     {
-        Cameras[CurrentCameraIndex].SetActive(false);
-        CurrentCameraIndex = Progression;
-        ShowCamera();
-
-        // Update currentCam in CameraBehaviour so raycasting works correctly
-        Camera camComponent = Cameras[CurrentCameraIndex].GetComponent<Camera>();
-        if (camComponent != null && cameraBehaviour != null)
-        {
-            cameraBehaviour.currentCam = camComponent;
-        }
+        return isViewingMonitor;
     }
 
     /// <summary>
-    /// Activates a specific camera from the Cameras array using its index.
-    /// Called by PlayerInteraction when a screen is clicked.
+    /// Gets the currently active camera.
     /// </summary>
-    /// <param name="index">Index of the camera to activate</param>
-    public void ActivateCameraByIndex(int index)
+    /// <returns>The currently active camera component</returns>
+    public Camera GetCurrentCamera()
     {
-        if (index >= 0 && index < Cameras.Length)
+        if (isViewingMonitor && currentMonitorIndex >= 0 && currentMonitorIndex < monitorCameras.Length)
         {
-            Cameras[CurrentCameraIndex].SetActive(false);
-            CurrentCameraIndex = index;
-            Cameras[CurrentCameraIndex].SetActive(true);
-            MainCamera.SetActive(false);
-            CamerasOpen = true;
-
-            Camera camComponent = Cameras[CurrentCameraIndex].GetComponent<Camera>();
-            if (camComponent != null && cameraBehaviour != null)
-            {
-                cameraBehaviour.currentCam = camComponent;
-            }
+            return monitorCameras[currentMonitorIndex];
         }
+        return mainCamera;
+    }
+
+    /// <summary>
+    /// Stops all player movement by clearing input values and physics momentum.
+    /// </summary>
+    private void StopPlayerMovement()
+    {
+        if (playerObject == null) return;
+
+        Debug.Log("Stopping player movement...");
+
+        // Clear StarterAssets input values
+        var starterInput = playerObject.GetComponent<StarterAssetsInputs>();
+        if (starterInput != null)
+        {
+            starterInput.move = Vector2.zero;
+            starterInput.look = Vector2.zero;
+            starterInput.jump = false;
+            starterInput.sprint = false;
+            Debug.Log("Cleared StarterAssetsInputs");
+        }
+
+        // Stop CharacterController movement
+        var characterController = playerObject.GetComponent<CharacterController>();
+        if (characterController != null)
+        {
+            characterController.Move(Vector3.zero);
+            Debug.Log("Stopped CharacterController movement");
+        }
+
+        // Stop any Rigidbody movement (if present)
+        var rigidbody = playerObject.GetComponent<Rigidbody>();
+        if (rigidbody != null)
+        {
+            rigidbody.linearVelocity = Vector3.zero;
+            rigidbody.angularVelocity = Vector3.zero;
+            Debug.Log("Stopped Rigidbody movement");
+        }
+
+        Debug.Log("Player movement stopped");
     }
 }

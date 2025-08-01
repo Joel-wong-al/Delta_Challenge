@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.tarodev.autosave": "https://github.com/Matthew-J-Spencer/Tarodev.git?path=Assets/Plugins/AutoSave",
     "com.unity.ai.navigation": "2.0.6",
     "com.unity.burst": "1.8.19",
     "com.unity.cinemachine": "3.1.2",

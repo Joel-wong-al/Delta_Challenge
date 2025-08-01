@@ -48,11 +48,11 @@ public class PlayerBehaviour : MonoBehaviour
                 Monitor screen = hit.collider.GetComponent<Monitor>();
                 if (screen != null)
                 {
-                    Debug.Log("Clicked screen for camera index: " + screen.cameraIndex);
+                    Debug.Log("Clicked monitor for camera index: " + screen.cameraIndex);
                     CameraSystem cameraSystem = FindObjectOfType<CameraSystem>();
                     if (cameraSystem != null)
                     {
-                        cameraSystem.ActivateCameraByIndex(screen.cameraIndex);
+                        cameraSystem.SwitchToMonitorCamera(screen.cameraIndex);
                     }
                 }
             }

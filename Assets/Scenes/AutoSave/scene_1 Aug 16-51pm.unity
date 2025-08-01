@@ -1698,15 +1698,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a613b6e00e5e16c44ab92a94a5051ee5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputDisabled: 0
-  starterInputs: {fileID: 0}
-  fpController: {fileID: 0}
-  charController: {fileID: 0}
-  playerInput: {fileID: 0}
-  originalMove: {x: 0, y: 0}
-  originalLook: {x: 0, y: 0}
-  originalJump: 0
-  originalSprint: 0
 --- !u!1001 &266272322
 PrefabInstance:
   m_ObjectHideFlags: 0
