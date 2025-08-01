@@ -1,18 +1,40 @@
+/******************************************************************************
+* File: CameraBehaviour.cs
+* Author: Javier
+* Created: [Insert Date]
+* Description: Handles raycasting from the currently active camera in a 
+*              multi-camera surveillance system. Supports mouse interaction
+*              detection and debug visualization for gameplay purposes.
+******************************************************************************/
+
 using UnityEngine;
 
+/// <summary>
+/// Controls player interaction using raycasting from the currently active camera.
+/// Used primarily in a CCTV-style camera system where cameras are switched dynamically.
+/// </summary>
 public class CameraBehaviour : MonoBehaviour
 {
-    [SerializeField] public Camera currentCam;// Reference to the current camera being used
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    /// <summary>
+    /// The camera currently being used for raycasting.
+    /// This is set dynamically by the CameraSystem when the camera is switched.
+    /// </summary>
+    [SerializeField] public Camera currentCam;
+
+    /// <summary>
+    /// Initializes the script by unlocking and showing the cursor.
+    /// </summary>
     void Start()
     {
-        //Make sure the cursor is visible
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
-
     }
 
-    // Update is called once per frame
+    /// <summary>
+    /// Handles raycasting from the current camera each frame.
+    /// Draws a debug ray from the player's position to the mouse cursor.
+    /// Detects mouse clicks on objects in the scene.
+    /// </summary>
     void Update()
     {
         if (currentCam == null)
@@ -20,20 +42,27 @@ public class CameraBehaviour : MonoBehaviour
             Debug.LogWarning("Current camera not set.");
             return;
         }
-        Vector3 mousePos = Input.mousePosition; // Get the mouse position in screen coordinates
-        mousePos.z = 10f; // Set a distance from the camera
-        mousePos = currentCam.ScreenToWorldPoint(mousePos);// Convert to world coordinates
-        Debug.DrawRay(transform.position, mousePos - transform.position, Color.blue);// Draw a ray from the player to the mouse position
 
-        if (Input.GetMouseButtonDown(0))// Check if the left mouse button is pressed
+        // Convert mouse screen position to world space
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = 10f;
+        mousePos = currentCam.ScreenToWorldPoint(mousePos);
+
+        // Draw debug ray from this object's position to the mouse position in world space
+        Debug.DrawRay(transform.position, mousePos - transform.position, Color.blue);
+
+        // On left mouse click
+        if (Input.GetMouseButtonDown(0))
         {
-            Ray ray = currentCam.ScreenPointToRay(Input.mousePosition);//  Create a ray from the camera to the mouse position
-            RaycastHit hit;// Check if the ray hits an object
+            // Create a ray from the camera to the mouse cursor
+            Ray ray = currentCam.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit, 100))// Check if the ray hits an object within 100 units
+            // Check if the ray hits a collider within 100 units
+            if (Physics.Raycast(ray, out hit, 100))
             {
                 Debug.Log("Hit: " + hit.collider.name);
-                // Add logic to interact with the object hit by the raycast
+                // TODO: Add object interaction logic here
             }
         }
     }
