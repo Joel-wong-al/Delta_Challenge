@@ -9,6 +9,7 @@
 
 using UnityEngine;
 using StarterAssets;
+using System.Collections.Generic;
 #if CINEMACHINE_TIMELINE
 using Cinemachine;
 #endif
@@ -44,6 +45,21 @@ public class CameraSystem : MonoBehaviour
     /// </summary>
     private int currentMonitorIndex = -1;
 
+    /// <summary>
+    /// Dictionary to store glow objects for highlighted customers.
+    /// </summary>
+    private Dictionary<GameObject, GameObject> glowObjects = new Dictionary<GameObject, GameObject>();
+
+    /// <summary>
+    /// Material used for the glow effect around highlighted objects.
+    /// </summary>
+    [SerializeField] private Material glowMaterial;
+
+    /// <summary>
+    /// Currently highlighted object.
+    /// </summary>
+    private GameObject currentlyHighlighted;
+
     void Start()
     {
         // Ensure main camera is active at start
@@ -69,6 +85,19 @@ public class CameraSystem : MonoBehaviour
         {
             ReturnToMainCamera();
         }
+
+        // Always show ray when in CCTV mode
+        if (isViewingMonitor)
+        {
+            ShowCCTVRay();
+            HandleHighlighting();
+        }
+
+        // Handle raycasting when in CCTV mode
+        if (isViewingMonitor && Input.GetMouseButtonDown(0))
+        {
+            HandleCCTVRaycast();
+        }
     }
 
     /// <summary>
@@ -77,6 +106,9 @@ public class CameraSystem : MonoBehaviour
     /// <param name="monitorIndex">Index of the monitor camera to switch to</param>
     public void SwitchToMonitorCamera(int monitorIndex)
     {
+        // Clear any active highlights before switching
+        ClearAllHighlights();
+
         // Check if the index is valid
         if (monitorIndex < 0 || monitorIndex >= monitorCameras.Length)
         {
@@ -128,6 +160,11 @@ public class CameraSystem : MonoBehaviour
             Debug.LogError("PlayerObject reference is not set! Camera movement will not be locked.");
         }
 
+        // Enable free cursor movement in CCTV view
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        Debug.Log("Cursor unlocked for CCTV view");
+
         Debug.Log($"Switched to monitor camera: {monitorCameras[monitorIndex].name}");
     }
 
@@ -136,6 +173,9 @@ public class CameraSystem : MonoBehaviour
     /// </summary>
     public void ReturnToMainCamera()
     {
+        // Clear any active highlights before switching
+        ClearAllHighlights();
+
         // Deactivate current monitor camera if viewing one
         if (isViewingMonitor && currentMonitorIndex >= 0 && currentMonitorIndex < monitorCameras.Length)
         {
@@ -166,6 +206,11 @@ public class CameraSystem : MonoBehaviour
         {
             Debug.LogError("PlayerObject reference is not set!");
         }
+
+        // Restore cursor to first-person mode (locked and hidden)
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        Debug.Log("Cursor locked for first-person view");
 
         // Reset state
         isViewingMonitor = false;
@@ -234,5 +279,253 @@ public class CameraSystem : MonoBehaviour
         }
 
         Debug.Log("Player movement stopped");
+    }
+
+    /// <summary>
+    /// Continuously shows the ray from the active monitor camera following the mouse cursor.
+    /// </summary>
+    private void ShowCCTVRay()
+    {
+        if (currentMonitorIndex < 0 || currentMonitorIndex >= monitorCameras.Length)
+            return;
+
+        Camera activeCamera = monitorCameras[currentMonitorIndex];
+        if (activeCamera == null) return;
+
+        // Cast ray from the active monitor camera following mouse position
+        Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
+        
+        // Always draw the ray in red
+        Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red);
+    }
+
+    /// <summary>
+    /// Handles raycasting from the active monitor camera when in CCTV view.
+    /// Allows catching thieves through the monitor cameras.
+    /// </summary>
+    private void HandleCCTVRaycast()
+    {
+        if (currentMonitorIndex < 0 || currentMonitorIndex >= monitorCameras.Length)
+            return;
+
+        Camera activeCamera = monitorCameras[currentMonitorIndex];
+        if (activeCamera == null) return;
+
+        // Cast ray from the active monitor camera
+        Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, 100f))
+        {
+            Debug.Log($"CCTV Raycast hit: {hit.collider.name} with tag: {hit.collider.tag}");
+
+            // Check if we hit a customer/thief
+            if (hit.collider.CompareTag("Customer"))
+            {
+                Thief thiefScript = hit.collider.GetComponent<Thief>();
+                if (thiefScript != null && thiefScript.IsStealing)
+                {
+                    Debug.Log("Caught thief through CCTV camera!");
+                    Destroy(hit.collider.gameObject);
+                }
+                else if (thiefScript != null)
+                {
+                    Debug.Log("Customer is not stealing - cannot catch them");
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handles mouse-over highlighting for customers when in CCTV view.
+    /// </summary>
+    private void HandleHighlighting()
+    {
+        if (currentMonitorIndex < 0 || currentMonitorIndex >= monitorCameras.Length)
+            return;
+
+        Camera activeCamera = monitorCameras[currentMonitorIndex];
+        if (activeCamera == null) return;
+
+        // Cast ray from the active monitor camera
+        Ray ray = activeCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, 100f))
+        {
+            GameObject hitObject = hit.collider.gameObject;
+            
+            // Find the customer object - check if we hit it directly or if it's a parent
+            GameObject customerObject = null;
+            
+            // First check if the hit object itself is tagged as Customer
+            if (hitObject.CompareTag("Customer"))
+            {
+                customerObject = hitObject;
+            }
+            else
+            {
+                // If not, check if any parent object is tagged as Customer
+                Transform currentTransform = hitObject.transform.parent;
+                while (currentTransform != null)
+                {
+                    if (currentTransform.CompareTag("Customer"))
+                    {
+                        customerObject = currentTransform.gameObject;
+                        break;
+                    }
+                    currentTransform = currentTransform.parent;
+                }
+            }
+            
+            if (customerObject != null)
+            {
+                // If this is a new object to highlight
+                if (currentlyHighlighted != customerObject)
+                {
+                    // Remove highlight from previous object
+                    RemoveHighlight();
+                    
+                    // Add highlight to new object
+                    AddHighlight(customerObject);
+                    currentlyHighlighted = customerObject;
+                }
+            }
+            else
+            {
+                // Mouse is not over a customer, remove any existing highlight
+                RemoveHighlight();
+            }
+        }
+        else
+        {
+            // Ray didn't hit anything, remove any existing highlight
+            RemoveHighlight();
+        }
+    }
+
+    /// <summary>
+    /// Adds glow effect around the specified object by creating a scaled duplicate.
+    /// </summary>
+    /// <param name="obj">Object to add glow effect to</param>
+    private void AddHighlight(GameObject obj)
+    {
+        if (obj == null || glowMaterial == null) return;
+
+        // Don't create duplicate glow if one already exists
+        if (glowObjects.ContainsKey(obj)) return;
+
+        // Create a glow object as a child of the target
+        GameObject glowObject = new GameObject(obj.name + "_Glow");
+        glowObject.transform.SetParent(obj.transform);
+        glowObject.transform.localPosition = Vector3.zero;
+        glowObject.transform.localRotation = Quaternion.identity;
+        glowObject.transform.localScale = Vector3.one * 1.1f; // Slightly larger for glow effect
+
+        // Get all renderers from the original object
+        Renderer[] originalRenderers = obj.GetComponentsInChildren<Renderer>();
+        
+        foreach (Renderer originalRenderer in originalRenderers)
+        {
+            // Skip if this renderer is on the root object (we want child renderers)
+            if (originalRenderer.transform == obj.transform) continue;
+
+            // Skip stealing sign renderers - we don't want to highlight those
+            if (originalRenderer.name.ToLower().Contains("stealing") || 
+                originalRenderer.transform.name.ToLower().Contains("stealing") ||
+                originalRenderer.name.ToLower().Contains("sign") ||
+                originalRenderer.transform.name.ToLower().Contains("sign"))
+            {
+                continue;
+            }
+
+            // Create corresponding renderer on glow object
+            GameObject rendererCopy = new GameObject(originalRenderer.name + "_GlowCopy");
+            rendererCopy.transform.SetParent(glowObject.transform);
+            
+            // Copy transform relative to the glow object
+            rendererCopy.transform.localPosition = obj.transform.InverseTransformPoint(originalRenderer.transform.position);
+            rendererCopy.transform.localRotation = Quaternion.Inverse(obj.transform.rotation) * originalRenderer.transform.rotation;
+            rendererCopy.transform.localScale = originalRenderer.transform.localScale;
+
+            // Copy the appropriate renderer component
+            if (originalRenderer is MeshRenderer meshRenderer)
+            {
+                MeshRenderer newMeshRenderer = rendererCopy.AddComponent<MeshRenderer>();
+                MeshFilter originalMeshFilter = originalRenderer.GetComponent<MeshFilter>();
+                if (originalMeshFilter != null)
+                {
+                    MeshFilter newMeshFilter = rendererCopy.AddComponent<MeshFilter>();
+                    newMeshFilter.mesh = originalMeshFilter.mesh;
+                }
+                
+                // Apply glow material to all material slots
+                Material[] glowMaterials = new Material[meshRenderer.materials.Length];
+                for (int i = 0; i < glowMaterials.Length; i++)
+                {
+                    glowMaterials[i] = glowMaterial;
+                }
+                newMeshRenderer.materials = glowMaterials;
+                newMeshRenderer.enabled = true;
+            }
+            else if (originalRenderer is SkinnedMeshRenderer skinnedRenderer)
+            {
+                SkinnedMeshRenderer newSkinnedRenderer = rendererCopy.AddComponent<SkinnedMeshRenderer>();
+                newSkinnedRenderer.sharedMesh = skinnedRenderer.sharedMesh;
+                newSkinnedRenderer.bones = skinnedRenderer.bones;
+                newSkinnedRenderer.rootBone = skinnedRenderer.rootBone;
+                
+                // Apply glow material to all material slots
+                Material[] glowMaterials = new Material[skinnedRenderer.materials.Length];
+                for (int i = 0; i < glowMaterials.Length; i++)
+                {
+                    glowMaterials[i] = glowMaterial;
+                }
+                newSkinnedRenderer.materials = glowMaterials;
+                newSkinnedRenderer.enabled = true;
+            }
+        }
+
+        // Store the glow object reference
+        glowObjects[obj] = glowObject;
+    }
+
+    /// <summary>
+    /// Removes glow effect from the currently highlighted object.
+    /// </summary>
+    private void RemoveHighlight()
+    {
+        if (currentlyHighlighted == null) return;
+
+        // Destroy the glow object if it exists
+        if (glowObjects.ContainsKey(currentlyHighlighted))
+        {
+            GameObject glowObject = glowObjects[currentlyHighlighted];
+            if (glowObject != null)
+            {
+                DestroyImmediate(glowObject);
+            }
+            glowObjects.Remove(currentlyHighlighted);
+        }
+
+        currentlyHighlighted = null;
+    }
+
+    /// <summary>
+    /// Clears all highlights when switching cameras or exiting CCTV view.
+    /// </summary>
+    private void ClearAllHighlights()
+    {
+        RemoveHighlight();
+        
+        // Clean up any remaining glow objects
+        foreach (var kvp in glowObjects)
+        {
+            if (kvp.Value != null)
+            {
+                DestroyImmediate(kvp.Value);
+            }
+        }
+        glowObjects.Clear();
     }
 }

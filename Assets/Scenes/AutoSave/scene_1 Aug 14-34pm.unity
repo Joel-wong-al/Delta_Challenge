@@ -1686,6 +1686,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   raycastCam: {fileID: 1555501975}
   maxDistance: 100
+--- !u!114 &244034362
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 244034346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a613b6e00e5e16c44ab92a94a5051ee5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &266272322
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8652,7 +8664,6 @@ MonoBehaviour:
   - {fileID: 238412408}
   - {fileID: 832304955}
   playerObject: {fileID: 244034346}
-  glowMaterial: {fileID: 2100000, guid: 092d816f076a1e74bb1a068e75876f12, type: 2}
 --- !u!1 &1453223250
 GameObject:
   m_ObjectHideFlags: 0
@@ -9175,6 +9186,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5126527961139664765, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1555501972}
+    - targetCorrespondingSourceObject: {fileID: 453084650579209855, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
+      insertIndex: 2
+      addedObject: {fileID: 244034362}
     - targetCorrespondingSourceObject: {fileID: 453084650579209855, guid: 035bf1ba97d19214580cfe6f5a29fdc3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 244034355}
