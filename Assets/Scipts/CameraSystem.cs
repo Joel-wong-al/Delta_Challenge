@@ -36,6 +36,12 @@ public class CameraSystem : MonoBehaviour
     [SerializeField] private GameObject playerObject;
 
     /// <summary>
+    /// Reference to the GameManager for handling customer interactions.
+    /// Found automatically at startup.
+    /// </summary>
+    private GameManager gameManager;
+
+    /// <summary>
     /// Whether the player is currently viewing a monitor camera.
     /// </summary>
     private bool isViewingMonitor = false;
@@ -62,6 +68,13 @@ public class CameraSystem : MonoBehaviour
 
     void Start()
     {
+        // Find GameManager automatically
+        gameManager = FindObjectOfType<GameManager>();
+        if (gameManager == null)
+        {
+            Debug.LogWarning("CameraSystem: No GameManager found in scene. Customer interactions will not work.");
+        }
+
         // Ensure main camera is active at start
         if (mainCamera != null)
         {
@@ -301,7 +314,7 @@ public class CameraSystem : MonoBehaviour
 
     /// <summary>
     /// Handles raycasting from the active monitor camera when in CCTV view.
-    /// Allows catching thieves through the monitor cameras.
+    /// Shows UI popup for customer apprehension decisions.
     /// </summary>
     private void HandleCCTVRaycast()
     {
@@ -317,20 +330,38 @@ public class CameraSystem : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, 100f))
         {
-            Debug.Log($"CCTV Raycast hit: {hit.collider.name} with tag: {hit.collider.tag}");
-
-            // Check if we hit a customer/thief
-            if (hit.collider.CompareTag("Customer"))
+            // Find the customer object - same logic as highlighting
+            GameObject customerObject = null;
+            GameObject hitObject = hit.collider.gameObject;
+            
+            // First check if the hit object itself is tagged as Customer
+            if (hitObject.CompareTag("Customer"))
             {
-                Thief thiefScript = hit.collider.GetComponent<Thief>();
-                if (thiefScript != null && thiefScript.IsStealing)
+                customerObject = hitObject;
+            }
+            else
+            {
+                // If not, check if any parent object is tagged as Customer
+                Transform currentTransform = hitObject.transform.parent;
+                while (currentTransform != null)
                 {
-                    Debug.Log("Caught thief through CCTV camera!");
-                    Destroy(hit.collider.gameObject);
+                    if (currentTransform.CompareTag("Customer"))
+                    {
+                        customerObject = currentTransform.gameObject;
+                        break;
+                    }
+                    currentTransform = currentTransform.parent;
                 }
-                else if (thiefScript != null)
+            }
+
+            // If we found a customer, show the apprehension UI
+            if (customerObject != null && gameManager != null)
+            {
+                Thief thiefScript = customerObject.GetComponent<Thief>();
+                if (thiefScript != null)
                 {
-                    Debug.Log("Customer is not stealing - cannot catch them");
+                    // Let GameManager handle the UI popup and decision
+                    gameManager.ShowCustomerApprehensionUI(customerObject, thiefScript);
                 }
             }
         }
@@ -430,9 +461,9 @@ public class CameraSystem : MonoBehaviour
             // Skip if this renderer is on the root object (we want child renderers)
             if (originalRenderer.transform == obj.transform) continue;
 
-            // Skip stealing sign renderers - we don't want to highlight those
-            if (originalRenderer.name.ToLower().Contains("stealing") || 
-                originalRenderer.transform.name.ToLower().Contains("stealing") ||
+            // Skip warning sign renderers - we don't want to highlight those
+            if (originalRenderer.name.ToLower().Contains("warning") || 
+                originalRenderer.transform.name.ToLower().Contains("warning") ||
                 originalRenderer.name.ToLower().Contains("sign") ||
                 originalRenderer.transform.name.ToLower().Contains("sign"))
             {
