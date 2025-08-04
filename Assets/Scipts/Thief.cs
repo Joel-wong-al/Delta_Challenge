@@ -26,23 +26,12 @@ public class Thief : MonoBehaviour
     /// <summary>
     /// Array of shelf checkpoint positions to move between.
     /// </summary>
-    [SerializeField] private Transform[] shelfCheckpoints;
+    private Transform[] shelfCheckpoints;
 
     /// <summary>
     /// Array of shelf landmark positions for customers to face when at shelves.
     /// </summary>
-    [SerializeField] private Transform[] shelfLandmarks;
-
-    /// <summary>
-    /// How close the customer must get to a shelf checkpoint before stopping.
-    /// Increased to handle navigation mesh issues and unreachable exact positions.
-    /// </summary>
-    [SerializeField] private float stopDistance = 2.5f;
-
-    /// <summary>
-    /// Speed of rotation when facing shelf landmarks (degrees per second).
-    /// </summary>
-    [SerializeField] private float rotationSpeed = 90f;
+    private Transform[] shelfLandmarks;
 
     /// <summary>
     /// How long the customer spends at each shelf location.
@@ -53,13 +42,6 @@ public class Thief : MonoBehaviour
     /// Time interval between warning sign displays.
     /// </summary>
     [SerializeField] private float warningInterval = 8f;
-
-    /// <summary>
-    /// Rotation offset to compensate for character model facing direction.
-    /// Adjust this if your character model doesn't face forward by default.
-    /// Common values: 0° (facing +Z), 90° (facing +X), 180° (facing -Z), 270° (facing -X)
-    /// </summary>
-    [SerializeField] private float characterFacingOffset = 0f;
 
     /// <summary>
     /// Reference to the Animator controlling customer animations.
@@ -76,6 +58,16 @@ public class Thief : MonoBehaviour
     /// Predetermined at spawn: thieves = 3, regular customers = 0-2.
     /// </summary>
     [SerializeField] private int totalWarningsToShow;
+
+    /// <summary>
+    /// Speed of rotation when facing shelf landmarks (degrees per second).
+    /// </summary>
+    private float rotationSpeed = 180f;
+
+    /// <summary>
+    /// How close the customer must get to a shelf checkpoint before stopping.
+    /// </summary>
+    private float stopDistance = 0.5f;
 
     /// <summary>
     /// Current number of warning signs already displayed.
@@ -145,52 +137,20 @@ public class Thief : MonoBehaviour
         if (shelfCheckpoints == null || shelfCheckpoints.Length == 0)
         {
             GameObject[] checkpoints = GameObject.FindGameObjectsWithTag("ShelfCheckpoint");
-            Debug.Log($"Initialize: Found {checkpoints.Length} shelf checkpoints");
             shelfCheckpoints = new Transform[checkpoints.Length];
             for (int i = 0; i < checkpoints.Length; i++)
             {
                 shelfCheckpoints[i] = checkpoints[i].transform;
-                Debug.Log($"Initialize: Checkpoint {i}: {checkpoints[i].name} at {checkpoints[i].transform.position}");
             }
         }
         
         if (shelfLandmarks == null || shelfLandmarks.Length == 0)
         {
             GameObject[] landmarks = GameObject.FindGameObjectsWithTag("ShelfLandmark");
-            Debug.Log($"Initialize: Found {landmarks.Length} shelf landmarks");
-            
-            if (landmarks.Length == 0)
-            {
-                Debug.LogWarning("Initialize: NO SHELF LANDMARKS FOUND! Make sure you have GameObjects tagged 'ShelfLandmark'");
-                
-                // Try to find objects with ShelfSystem script that should be landmarks
-                ShelfSystem[] shelfSystems = FindObjectsOfType<ShelfSystem>();
-                Debug.Log($"Initialize: Found {shelfSystems.Length} ShelfSystem components");
-                
-                int landmarkCount = 0;
-                foreach (ShelfSystem system in shelfSystems)
-                {
-                    // Check the ShelfSystem's settings
-                    Debug.Log($"Initialize: ShelfSystem on {system.gameObject.name} - isLandmark check needed");
-                    if (system.gameObject.CompareTag("ShelfLandmark"))
-                    {
-                        landmarkCount++;
-                        Debug.Log($"Initialize: {system.gameObject.name} is properly tagged as ShelfLandmark");
-                    }
-                    else
-                    {
-                        Debug.Log($"Initialize: {system.gameObject.name} tag is '{system.gameObject.tag}' (should be 'ShelfLandmark' for landmarks)");
-                    }
-                }
-                
-                Debug.Log($"Initialize: Found {landmarkCount} properly tagged ShelfLandmark objects");
-            }
-            
             shelfLandmarks = new Transform[landmarks.Length];
             for (int i = 0; i < landmarks.Length; i++)
             {
                 shelfLandmarks[i] = landmarks[i].transform;
-                Debug.Log($"Initialize: Landmark {i}: {landmarks[i].name} at {landmarks[i].transform.position}");
             }
         }
         
@@ -257,27 +217,31 @@ public class Thief : MonoBehaviour
     /// </summary>
     IEnumerator Moving()
     {
-        Debug.Log("Moving: Entered Moving state");
-        
         if (shelfCheckpoints.Length == 0)
         {
             Debug.LogWarning("Moving: No shelf checkpoints found! Customer cannot navigate.");
             yield break;
         }
 
-        // Re-enable NavMeshAgent for movement
-        if (myAgent != null)
-        {
-            myAgent.enabled = true; // Re-enable if it was disabled
-            myAgent.isStopped = false;
-            myAgent.updateRotation = true; // Let agent handle rotation during movement
-            Debug.Log("Moving: NavMeshAgent re-enabled for movement");
-        }
-        else
+        // Check if NavMeshAgent is valid and on NavMesh
+        if (myAgent == null)
         {
             Debug.LogError("Moving: NavMeshAgent is null!");
             yield break;
         }
+
+        if (!myAgent.isOnNavMesh)
+        {
+            Debug.LogError($"Moving: {gameObject.name} is not on NavMesh! Make sure spawn point is on NavMesh.");
+            yield break;
+        }
+
+        // Re-enable NavMeshAgent for movement
+        if (!myAgent.enabled)
+            myAgent.enabled = true;
+            
+        myAgent.isStopped = false;
+        myAgent.updateRotation = true;
 
         // Set walking animation
         if (animator != null)
@@ -290,61 +254,22 @@ public class Thief : MonoBehaviour
         currentShelfIndex = Random.Range(0, shelfCheckpoints.Length);
         Transform destination = shelfCheckpoints[currentShelfIndex];
         
-        Debug.Log($"Moving: Selected checkpoint {currentShelfIndex}: {destination.name} at {destination.position}");
-        Debug.Log($"Moving: Customer current position: {transform.position}");
-        
         myAgent.SetDestination(destination.position);
-        if (animator != null)
-            animator.SetBool("isWalking", true);
-
-        Debug.Log($"Moving: Destination set, agent pathfinding...");
 
         while (currentState == "Moving")
         {
-            if (myAgent.pathPending)
-            {
-                Debug.Log("Moving: Path still pending...");
-            }
-            else
+            if (!myAgent.pathPending)
             {
                 float remainingDistance = myAgent.remainingDistance;
-                float directDistance = Vector3.Distance(transform.position, destination.position);
                 
-                Debug.Log($"Moving: NavMesh distance: {remainingDistance}, Direct distance: {directDistance}, Stop distance: {stopDistance}");
-                
-                // Check both NavMesh distance and direct distance to handle navigation issues
-                bool reachedByNavMesh = remainingDistance <= stopDistance && remainingDistance > 0;
-                bool reachedByDistance = directDistance <= stopDistance;
-                bool navMeshStuck = remainingDistance <= 0.1f && remainingDistance > 0; // Very close but not exactly zero
-                
-                if (reachedByNavMesh || reachedByDistance || navMeshStuck)
+                if (remainingDistance <= stopDistance && remainingDistance > 0)
                 {
-                    Debug.Log($"Moving: Reached destination! (NavMesh: {reachedByNavMesh}, Direct: {reachedByDistance}, Stuck: {navMeshStuck})");
-                    if (animator != null)
-                        animator.SetBool("isWalking", false);
-                    
                     StartCoroutine(SwitchState("AtShelf"));
                     yield break;
                 }
-                
-                // Additional safety check - if customer hasn't moved much in a while, consider them "arrived"
-                // This handles cases where NavMesh gets confused
-                if (myAgent.velocity.magnitude < 0.1f && !myAgent.pathPending)
-                {
-                    Debug.Log($"Moving: Customer appears stuck (low velocity), considering arrival. Distance: {directDistance}");
-                    if (directDistance <= stopDistance * 2f) // Double the normal range for stuck customers
-                    {
-                        Debug.Log("Moving: Stuck customer close enough - switching to AtShelf");
-                        if (animator != null)
-                            animator.SetBool("isWalking", false);
-                        
-                        StartCoroutine(SwitchState("AtShelf"));
-                        yield break;
-                    }
-                }
             }
 
-            yield return new WaitForSeconds(0.5f); // Check every 0.5 seconds instead of every frame
+            yield return new WaitForSeconds(0.5f);
         }
     }
 
@@ -353,12 +278,11 @@ public class Thief : MonoBehaviour
     /// </summary>
     IEnumerator AtShelf()
     {
-        // Stop the NavMeshAgent completely
+        // Stop the NavMeshAgent movement but keep it enabled
         if (myAgent != null)
         {
             myAgent.isStopped = true;
             myAgent.updateRotation = false;
-            myAgent.enabled = false; // Completely disable to prevent interference
         }
 
         // Set idle animation when stopping at shelf
@@ -367,9 +291,6 @@ public class Thief : MonoBehaviour
             animator.SetBool("IsWalking", false);
             animator.SetBool("IsIdle", true);
         }
-
-        // Wait a frame to ensure agent is fully stopped
-        yield return null;
 
         // Face the closest shelf landmark
         if (shelfLandmarks.Length > 0)
@@ -381,12 +302,9 @@ public class Thief : MonoBehaviour
                 Vector3 lookDirection = (closestLandmark.position - transform.position).normalized;
                 lookDirection.y = 0; // Keep horizontal rotation only
                 
-                if (lookDirection != Vector3.zero && lookDirection.magnitude > 0.01f)
+                if (lookDirection != Vector3.zero)
                 {
                     Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
-                    
-                    // Apply character facing offset to compensate for model orientation
-                    targetRotation *= Quaternion.Euler(0, characterFacingOffset, 0);
                     
                     // Smooth rotation towards the landmark
                     Quaternion startRotation = transform.rotation;

@@ -141,14 +141,14 @@ public class GameManager : MonoBehaviour
                 if (warningCount == 0)
                 {
                     // Completely innocent customer
-                    playerScore -= 50;
+                    playerScore -= 100;
                     Debug.Log($"WRONG! Apprehended innocent customer. -50 points. Score: {playerScore}");
                     ShowFeedback("WRONG! Innocent Customer! -50 points", Color.red);
                 }
                 else
                 {
                     // Suspicious but not confirmed thief (1-2 warnings)
-                    playerScore -= 25;
+                    playerScore -= 50;
                     Debug.Log($"WRONG! Apprehended unconfirmed suspect ({warningCount} warnings). -25 points. Score: {playerScore}");
                     ShowFeedback($"WRONG! Only {warningCount} warnings! -25 points", Color.yellow);
                 }
