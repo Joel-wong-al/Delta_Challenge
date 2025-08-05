@@ -1432,7 +1432,7 @@ GameObject:
   - component: {fileID: 2758984057402454276}
   m_Layer: 0
   m_Name: customer9
-  m_TagString: Untagged
+  m_TagString: Customer
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1465,7 +1465,7 @@ Animator:
   m_GameObject: {fileID: 4870199081637912788}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 7f9d0ccbb329a724b8af67f1f13cde47, type: 2}
+  m_Controller: {fileID: 9100000, guid: 63854b2e75fa2d3488a9cdd369a53465, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

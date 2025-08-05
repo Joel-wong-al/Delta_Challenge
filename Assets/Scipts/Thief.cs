@@ -256,16 +256,89 @@ public class Thief : MonoBehaviour
         
         myAgent.SetDestination(destination.position);
 
+        // Stuck detection variables
+        Vector3 lastPosition = transform.position;
+        float stuckTimer = 0f;
+        float stuckThreshold = 3f; // 3 seconds without movement = stuck
+        float positionThreshold = 0.1f; // Minimum distance to consider as movement
+        int maxRetries = 3;
+        int retryCount = 0;
+
         while (currentState == "Moving")
         {
             if (!myAgent.pathPending)
             {
                 float remainingDistance = myAgent.remainingDistance;
                 
+                // Check if reached destination
                 if (remainingDistance <= stopDistance && remainingDistance > 0)
                 {
+                    Debug.Log($"Customer {gameObject.name} reached shelf {currentShelfIndex}");
                     StartCoroutine(SwitchState("AtShelf"));
                     yield break;
+                }
+
+                // Stuck detection during movement
+                float distanceMoved = Vector3.Distance(transform.position, lastPosition);
+                
+                if (distanceMoved < positionThreshold)
+                {
+                    // Customer hasn't moved much, increment stuck timer
+                    stuckTimer += 0.5f;
+                    
+                    if (stuckTimer >= stuckThreshold)
+                    {
+                        Debug.LogWarning($"Customer {gameObject.name} appears stuck! Attempting recovery...");
+                        
+                        // Try recovery methods
+                        if (retryCount < maxRetries)
+                        {
+                            retryCount++;
+                            
+                            // Recovery method 1: Try a different destination
+                            if (retryCount == 1)
+                            {
+                                currentShelfIndex = Random.Range(0, shelfCheckpoints.Length);
+                                destination = shelfCheckpoints[currentShelfIndex];
+                                Debug.Log($"Recovery attempt {retryCount}: Trying new destination (shelf {currentShelfIndex})");
+                                myAgent.SetDestination(destination.position);
+                            }
+                            // Recovery method 2: Reset NavMeshAgent
+                            else if (retryCount == 2)
+                            {
+                                Debug.Log($"Recovery attempt {retryCount}: Resetting NavMeshAgent");
+                                myAgent.enabled = false;
+                                yield return new WaitForSeconds(0.1f);
+                                myAgent.enabled = true;
+                                myAgent.SetDestination(destination.position);
+                            }
+                            // Recovery method 3: Teleport to destination
+                            else if (retryCount == 3)
+                            {
+                                Debug.Log($"Recovery attempt {retryCount}: Teleporting to destination");
+                                transform.position = destination.position;
+                                StartCoroutine(SwitchState("AtShelf"));
+                                yield break;
+                            }
+                            
+                            stuckTimer = 0f; // Reset stuck timer after recovery attempt
+                        }
+                        else
+                        {
+                            // All recovery attempts failed, teleport to destination
+                            Debug.LogError($"Customer {gameObject.name} stuck beyond recovery! Teleporting to destination.");
+                            transform.position = destination.position;
+                            StartCoroutine(SwitchState("AtShelf"));
+                            yield break;
+                        }
+                    }
+                }
+                else
+                {
+                    // Customer is moving normally, reset stuck detection
+                    stuckTimer = 0f;
+                    retryCount = 0;
+                    lastPosition = transform.position;
                 }
             }
 

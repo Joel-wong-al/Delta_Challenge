@@ -69,7 +69,7 @@ public class CameraSystem : MonoBehaviour
     void Start()
     {
         // Find GameManager automatically
-        gameManager = FindObjectOfType<GameManager>();
+        gameManager = FindFirstObjectByType<GameManager>();
         if (gameManager == null)
         {
             Debug.LogWarning("CameraSystem: No GameManager found in scene. Customer interactions will not work.");
