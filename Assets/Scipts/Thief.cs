@@ -98,6 +98,11 @@ public class Thief : MonoBehaviour
     /// Timer for warning sign intervals.
     /// </summary>
     private float warningTimer = 0f;
+    
+    /// <summary>
+    /// Whether this customer has been initialized by the GameManager.
+    /// </summary>
+    private bool hasBeenInitialized = false;
     /// <summary>
     /// Initializes the NavMeshAgent component and sets up customer behavior.
     /// </summary>
@@ -118,6 +123,7 @@ public class Thief : MonoBehaviour
     /// <param name="isThiefCustomer">Whether this customer should be a thief</param>
     public void Initialize(bool isThiefCustomer)
     {
+        hasBeenInitialized = true; // Mark as initialized to prevent Start() from overriding
         IsThief = isThiefCustomer;
         
         if (IsThief)
@@ -162,8 +168,8 @@ public class Thief : MonoBehaviour
     /// </summary>
     void Start()
     {
-        // Default initialization if not called externally
-        if (totalWarningsToShow == 0 && !IsThief)
+        // Default initialization if not called externally by GameManager
+        if (!hasBeenInitialized)
         {
             Initialize(Random.value < 0.3f); // 30% chance of being a thief
         }
@@ -262,7 +268,14 @@ public class Thief : MonoBehaviour
 
         while (currentState == "Moving")
         {
-            if (!myAgent.pathPending)
+            // Check if agent is still valid and active before checking path
+            if (myAgent == null || !myAgent.enabled || !myAgent.isOnNavMesh)
+            {
+                Debug.LogWarning($"Moving: NavMeshAgent became invalid for {gameObject.name}");
+                yield break;
+            }
+            
+            if (!myAgent.pathPending && myAgent.hasPath)
             {
                 float remainingDistance = myAgent.remainingDistance;
                 
