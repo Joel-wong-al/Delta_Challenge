@@ -154,7 +154,6 @@ public class Thief : MonoBehaviour
             }
         }
         
-        Debug.Log($"Initialize: Starting customer behavior - switching to Moving state");
         StartCoroutine(SwitchState("Moving"));
     }
 
@@ -195,11 +194,9 @@ public class Thief : MonoBehaviour
     {
         if (currentState == newState)
         {
-            Debug.Log($"SwitchState: Already in state {newState}, ignoring");
             yield break;
         }
 
-        Debug.Log($"SwitchState: Changing from '{currentState}' to '{newState}'");
         currentState = newState;
 
         if (newState == "Moving")
@@ -219,7 +216,6 @@ public class Thief : MonoBehaviour
     {
         if (shelfCheckpoints.Length == 0)
         {
-            Debug.LogWarning("Moving: No shelf checkpoints found! Customer cannot navigate.");
             yield break;
         }
 
@@ -259,7 +255,7 @@ public class Thief : MonoBehaviour
         // Stuck detection variables
         Vector3 lastPosition = transform.position;
         float stuckTimer = 0f;
-        float stuckThreshold = 3f; // 3 seconds without movement = stuck
+        float stuckThreshold = 1.5f; // 1.5 seconds without movement = stuck (faster detection)
         float positionThreshold = 0.1f; // Minimum distance to consider as movement
         int maxRetries = 3;
         int retryCount = 0;
@@ -273,7 +269,6 @@ public class Thief : MonoBehaviour
                 // Check if reached destination
                 if (remainingDistance <= stopDistance && remainingDistance > 0)
                 {
-                    Debug.Log($"Customer {gameObject.name} reached shelf {currentShelfIndex}");
                     StartCoroutine(SwitchState("AtShelf"));
                     yield break;
                 }
@@ -288,8 +283,6 @@ public class Thief : MonoBehaviour
                     
                     if (stuckTimer >= stuckThreshold)
                     {
-                        Debug.LogWarning($"Customer {gameObject.name} appears stuck! Attempting recovery...");
-                        
                         // Try recovery methods
                         if (retryCount < maxRetries)
                         {
@@ -300,13 +293,11 @@ public class Thief : MonoBehaviour
                             {
                                 currentShelfIndex = Random.Range(0, shelfCheckpoints.Length);
                                 destination = shelfCheckpoints[currentShelfIndex];
-                                Debug.Log($"Recovery attempt {retryCount}: Trying new destination (shelf {currentShelfIndex})");
                                 myAgent.SetDestination(destination.position);
                             }
                             // Recovery method 2: Reset NavMeshAgent
                             else if (retryCount == 2)
                             {
-                                Debug.Log($"Recovery attempt {retryCount}: Resetting NavMeshAgent");
                                 myAgent.enabled = false;
                                 yield return new WaitForSeconds(0.1f);
                                 myAgent.enabled = true;
@@ -315,7 +306,6 @@ public class Thief : MonoBehaviour
                             // Recovery method 3: Teleport to destination
                             else if (retryCount == 3)
                             {
-                                Debug.Log($"Recovery attempt {retryCount}: Teleporting to destination");
                                 transform.position = destination.position;
                                 StartCoroutine(SwitchState("AtShelf"));
                                 yield break;
@@ -326,7 +316,6 @@ public class Thief : MonoBehaviour
                         else
                         {
                             // All recovery attempts failed, teleport to destination
-                            Debug.LogError($"Customer {gameObject.name} stuck beyond recovery! Teleporting to destination.");
                             transform.position = destination.position;
                             StartCoroutine(SwitchState("AtShelf"));
                             yield break;
@@ -406,8 +395,6 @@ public class Thief : MonoBehaviour
     /// </summary>
     IEnumerator Browsing()
     {
-        Debug.Log($"Customer browsing at shelf {currentShelfIndex}");
-        
         // Set idle animation for browsing
         if (animator != null)
         {

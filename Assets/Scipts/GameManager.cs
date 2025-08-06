@@ -65,6 +65,9 @@ public class GameManager : MonoBehaviour
     private int thiefCountForDay = 0;
     private int thievesSpawnedToday = 0;
     private int thievesCaughtToday = 0;
+    
+    // Thief wave distribution
+    private Dictionary<int, int> thievesPerWave = new Dictionary<int, int>(); // wave -> thief count
 
     // Day requirements (day number -> required thieves, required score)
     private Dictionary<int, DayRequirement> dayRequirements = new Dictionary<int, DayRequirement>
@@ -106,7 +109,91 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (!gameActive) return;
+        // Handle keyboard input for apprehension decision (only when game is active)
+        if (gameActive && awaitingPlayerDecision)
+        {
+            if (Input.GetKeyDown(KeyCode.Y))
+            {
+                OnApprehendCustomer();
+            }
+            else if (Input.GetKeyDown(KeyCode.N))
+            {
+                OnReleaseCustomer();
+            }
+        }
+
+        // Handle day progression input (works even when game is not active)
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            Debug.Log($"G pressed - dayComplete: {dayComplete}");
+            if (!dayComplete)
+            {
+                Debug.Log("Day is not complete yet, G key has no effect");
+            }
+        }
+        
+        // DEBUG: Press K to instantly end day and catch all thieves (works even when game is not active)
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            Debug.Log("DEBUG: K pressed - Instantly ending day and catching all thieves");
+            
+            // Set score high enough to pass any day
+            playerScore = 1000;
+            
+            // Mark all thieves as caught
+            thievesCaughtToday = thievesSpawnedToday;
+            for (int i = 1; i <= thievesSpawnedToday; i++)
+            {
+                if (!thiefsCaughtToday.Contains($"Thief #{i} (debug catch)"))
+                {
+                    thiefsCaughtToday.Add($"Thief #{i} (debug catch)");
+                }
+            }
+            
+            // Force end the day
+            EndDay();
+        }
+        
+        if (dayComplete && Input.GetKeyDown(KeyCode.G))
+        {
+            Debug.Log("G pressed - Day progression triggered");
+            
+            // Hide the end of day panel first
+            if (endOfDayPanel != null)
+                endOfDayPanel.SetActive(false);
+            if (gameOverPanel != null)
+                gameOverPanel.SetActive(false);
+                
+            // Check if day was passed to determine action
+            bool dayPassed = CheckDayRequirements();
+            Debug.Log($"Day passed check: {dayPassed}");
+            
+            if (!dayPassed)
+            {
+                // Day failed, restart current day
+                Debug.Log("Day failed - restarting current day");
+                RestartDay();
+            }
+            else if (currentDay >= 5)
+            {
+                // Game complete, restart entire game
+                Debug.Log("Game complete - restarting game");
+                OnRestartGameButton();
+            }
+            else
+            {
+                // Day passed, go to next day
+                Debug.Log($"Day passed - going from day {currentDay} to day {currentDay + 1}");
+                NextDay();
+            }
+        }
+
+        // Only run game logic when gameActive is true
+        if (!gameActive) 
+        {
+            UpdateTimeDisplay(); // Still update time display for UI
+            return;
+        }
 
         // Update day timer only during active waves (not during rest periods)
         if (isInWave)
@@ -128,19 +215,6 @@ public class GameManager : MonoBehaviour
         if (isInWave && dayTimer >= dayDuration && !dayComplete)
         {
             EndDay();
-        }
-
-        // Handle keyboard input for apprehension decision
-        if (awaitingPlayerDecision)
-        {
-            if (Input.GetKeyDown(KeyCode.Y))
-            {
-                OnApprehendCustomer();
-            }
-            else if (Input.GetKeyDown(KeyCode.N))
-            {
-                OnReleaseCustomer();
-            }
         }
 
         // Update UI
@@ -172,12 +246,13 @@ public class GameManager : MonoBehaviour
         thievesSpawnedToday = 0;
         thievesCaughtToday = 0;
 
-        // Set thief count for this day
-        if (dayRequirements.ContainsKey(currentDay))
-        {
-            thiefCountForDay = dayRequirements[currentDay].thieves;
-            Debug.Log($"Day {currentDay} started: Target {thiefCountForDay} thieves, {customersPerWave} customers per wave, 4 waves total");
-        }
+        // Configure day-specific settings (including thief count)
+        ConfigureDaySettings();
+        
+        Debug.Log($"Day {currentDay} started: Target {thiefCountForDay} thieves, {customersPerWave} customers per wave, 4 waves total");
+        
+        // Randomly distribute thieves across waves
+        DistributeThievesAcrossWaves();
         
         // Clear any remaining customers from previous day
         ClearAllCustomers();
@@ -189,6 +264,106 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Configures day-specific settings to increase difficulty and variety.
+    /// </summary>
+    private void ConfigureDaySettings()
+    {
+        // Always 4 customers per wave - only thief count changes per day
+        customersPerWave = 4;
+        
+        switch (currentDay)
+        {
+            case 1:
+                // Day 1: Tutorial - Easy settings
+                thiefCountForDay = 1;
+                Debug.Log("Day 1: Tutorial mode - 1 thief");
+                break;
+                
+            case 2:
+                // Day 2: Slightly more challenging
+                thiefCountForDay = 2;
+                Debug.Log("Day 2: Increased challenge - 2 thieves");
+                break;
+                
+            case 3:
+                // Day 3: More thieves
+                thiefCountForDay = 3;
+                Debug.Log("Day 3: Higher difficulty - 3 thieves");
+                break;
+                
+            case 4:
+                // Day 4: High intensity
+                thiefCountForDay = 4;
+                Debug.Log("Day 4: High intensity - 4 thieves");
+                break;
+                
+            case 5:
+                // Day 5: Maximum challenge
+                thiefCountForDay = 5;
+                Debug.Log("Day 5: Maximum challenge - 5 thieves");
+                break;
+                
+            default:
+                // Fallback to standard settings
+                thiefCountForDay = 1;
+                Debug.LogWarning($"Day {currentDay}: Using default settings");
+                break;
+        }
+        
+        Debug.Log($"Day {currentDay} Configuration: {customersPerWave} customers/wave, {thiefCountForDay} thieves total");
+    }
+
+    /// <summary>
+    /// Randomly distributes thieves across the 4 waves, with max 2 thieves per wave.
+    /// </summary>
+    private void DistributeThievesAcrossWaves()
+    {
+        thievesPerWave.Clear();
+        
+        // Initialize all waves with 0 thieves
+        for (int wave = 1; wave <= 4; wave++)
+        {
+            thievesPerWave[wave] = 0;
+        }
+        
+        int remainingThieves = thiefCountForDay;
+        
+        while (remainingThieves > 0)
+        {
+            // Get all waves that can still accommodate thieves (less than 2)
+            List<int> availableWaves = new List<int>();
+            for (int wave = 1; wave <= 4; wave++)
+            {
+                if (thievesPerWave[wave] < 2)
+                {
+                    availableWaves.Add(wave);
+                }
+            }
+            
+            if (availableWaves.Count == 0)
+            {
+                Debug.LogWarning($"Cannot fit all {thiefCountForDay} thieves with max 2 per wave!");
+                break;
+            }
+            
+            // Randomly select a wave and add a thief
+            int randomWaveIndex = Random.Range(0, availableWaves.Count);
+            int selectedWave = availableWaves[randomWaveIndex];
+            thievesPerWave[selectedWave]++;
+            remainingThieves--;
+        }
+        
+        // Debug output
+        string distribution = "Thief distribution: ";
+        for (int wave = 1; wave <= 4; wave++)
+        {
+            distribution += $"Wave {wave}: {thievesPerWave[wave]} thieves";
+            if (wave < 4) distribution += ", ";
+        }
+        Debug.Log(distribution);
+    }
+
+    /// <summary>
     /// Ends the current day and shows summary.
     /// </summary>
     private void EndDay()
@@ -197,6 +372,13 @@ public class GameManager : MonoBehaviour
         
         dayComplete = true;
         gameActive = false;
+        
+        // Stop all wave activities immediately
+        isInWave = false;
+        isResting = false;
+        
+        // Stop all coroutines to prevent background activities
+        StopAllCoroutines();
         
         // Clear any remaining customers
         ClearAllCustomers();
@@ -305,6 +487,10 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log($"=== STARTING WAVE {currentWave} ===");
         
+        // Debug: Show thief distribution for this wave
+        int thievesForThisWave = thievesPerWave.ContainsKey(currentWave) ? thievesPerWave[currentWave] : 0;
+        Debug.Log($"Wave {currentWave} should have {thievesForThisWave} thieves according to distribution");
+        
         isInWave = true;
         isResting = false;
         waveTimer = 0f;
@@ -321,51 +507,85 @@ public class GameManager : MonoBehaviour
     private IEnumerator SpawnWaveCustomers()
     {
         int customersSpawned = 0;
-        int thievesToSpawnThisWave = CalculateThievesForWave();
+        int thievesToSpawnThisWave = thievesPerWave.ContainsKey(currentWave) ? thievesPerWave[currentWave] : 0;
+        
+        // Track used customer prefab indices to avoid duplicates in the same wave
+        List<int> usedPrefabIndices = new List<int>();
         
         Debug.Log($"Starting Wave {currentWave}: Planning to spawn {thievesToSpawnThisWave} thieves out of {customersPerWave} total customers");
         
-        while (customersSpawned < customersPerWave && isInWave)
+        // If no thieves should spawn in this wave, spawn all regular customers
+        if (thievesToSpawnThisWave == 0)
         {
-            bool shouldBeThief = (thievesToSpawnThisWave > 0) && 
-                               (thievesSpawnedToday < thiefCountForDay);
+            Debug.Log($"Wave {currentWave}: No thieves assigned - spawning {customersPerWave} regular customers");
             
-            if (shouldBeThief)
-            {
-                thievesToSpawnThisWave--;
-                thievesSpawnedToday++;
-                Debug.Log($"Spawning THIEF #{thievesSpawnedToday} in wave {currentWave} (customer {customersSpawned + 1}/{customersPerWave})");
-            }
-            else
+            while (customersSpawned < customersPerWave && isInWave)
             {
                 Debug.Log($"Spawning REGULAR customer in wave {currentWave} (customer {customersSpawned + 1}/{customersPerWave})");
+                SpawnCustomer(false, usedPrefabIndices); // false = regular customer
+                customersSpawned++;
+                
+                yield return new WaitForSeconds(customerSpawnInterval);
+            }
+        }
+        else
+        {
+            // Create a list to determine which customer positions should be thieves
+            List<bool> customerTypes = new List<bool>();
+            
+            // Add thieves for this wave
+            for (int i = 0; i < thievesToSpawnThisWave; i++)
+            {
+                customerTypes.Add(true); // true = thief
             }
             
-            SpawnCustomer(shouldBeThief);
-            customersSpawned++;
+            // Fill remaining positions with regular customers
+            for (int i = thievesToSpawnThisWave; i < customersPerWave; i++)
+            {
+                customerTypes.Add(false); // false = regular customer
+            }
             
-            yield return new WaitForSeconds(customerSpawnInterval);
+            // Shuffle the list to randomize thief positions within the wave
+            for (int i = 0; i < customerTypes.Count; i++)
+            {
+                bool temp = customerTypes[i];
+                int randomIndex = Random.Range(i, customerTypes.Count);
+                customerTypes[i] = customerTypes[randomIndex];
+                customerTypes[randomIndex] = temp;
+            }
+            
+            // Debug: Show the planned spawn order
+            string spawnOrder = "Spawn order: ";
+            for (int i = 0; i < customerTypes.Count; i++)
+            {
+                spawnOrder += customerTypes[i] ? "T" : "R";
+                if (i < customerTypes.Count - 1) spawnOrder += ", ";
+            }
+            Debug.Log(spawnOrder);
+            
+            // Spawn customers according to the randomized order
+            while (customersSpawned < customersPerWave && isInWave)
+            {
+                bool shouldBeThief = customerTypes[customersSpawned];
+                
+                if (shouldBeThief)
+                {
+                    thievesSpawnedToday++;
+                    Debug.Log($"Spawning THIEF #{thievesSpawnedToday} in wave {currentWave} (customer {customersSpawned + 1}/{customersPerWave})");
+                }
+                else
+                {
+                    Debug.Log($"Spawning REGULAR customer in wave {currentWave} (customer {customersSpawned + 1}/{customersPerWave})");
+                }
+                
+                SpawnCustomer(shouldBeThief, usedPrefabIndices);
+                customersSpawned++;
+                
+                yield return new WaitForSeconds(customerSpawnInterval);
+            }
         }
         
         Debug.Log($"Wave {currentWave} spawning complete: {customersSpawned} customers spawned, {thievesSpawnedToday} total thieves so far");
-    }
-
-    /// <summary>
-    /// Calculates how many thieves should spawn in this wave.
-    /// </summary>
-    private int CalculateThievesForWave()
-    {
-        int remainingThieves = thiefCountForDay - thievesSpawnedToday;
-        int remainingWaves = 4 - currentWave + 1; // Current wave + remaining waves (4 total waves per day)
-        
-        if (remainingWaves <= 0) return remainingThieves;
-        
-        // Distribute thieves evenly across remaining waves
-        int thievesForThisWave = Mathf.Min(remainingThieves, Mathf.CeilToInt((float)remainingThieves / remainingWaves));
-        
-        Debug.Log($"Wave {currentWave}: Remaining thieves: {remainingThieves}, Remaining waves: {remainingWaves}, Thieves for this wave: {thievesForThisWave}");
-        
-        return thievesForThisWave;
     }
 
     /// <summary>
@@ -447,8 +667,6 @@ public class GameManager : MonoBehaviour
             // Try to set destination, but handle cases where it might fail
             if (navAgent.SetDestination(exitPoint.position))
             {
-                Debug.Log($"Customer {customer.name} walking to exit at {exitPoint.position}");
-                
                 // Wait for customer to reach the exit or timeout after reasonable time
                 float timeout = 15f; // 15 seconds max to reach exit
                 float timer = 0f;
@@ -460,7 +678,6 @@ public class GameManager : MonoBehaviour
                     // Check if customer is close to exit point
                     if (Vector3.Distance(customer.transform.position, exitPoint.position) < 2f)
                     {
-                        Debug.Log($"Customer {customer.name} reached exit successfully");
                         break;
                     }
                     
@@ -470,7 +687,6 @@ public class GameManager : MonoBehaviour
                         stuckTimer += Time.deltaTime;
                         if (stuckTimer > 3f)
                         {
-                            Debug.Log($"Customer {customer.name} appears stuck, teleporting to exit");
                             customer.transform.position = exitPoint.position;
                             break;
                         }
@@ -484,21 +700,11 @@ public class GameManager : MonoBehaviour
                     timer += Time.deltaTime;
                     yield return null;
                 }
-                
-                if (timer >= timeout)
-                {
-                    Debug.LogWarning($"Customer {customer.name} timed out reaching exit, removing anyway");
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"Failed to set destination for customer {customer.name}, removing immediately");
             }
         }
         else
         {
             // No NavMeshAgent, just wait a brief moment for visual effect
-            Debug.Log($"Customer {customer.name} has no NavMeshAgent, removing after brief delay");
             yield return new WaitForSeconds(1f);
         }
         
@@ -537,7 +743,8 @@ public class GameManager : MonoBehaviour
     /// Spawns a new customer with predetermined thief/regular status.
     /// </summary>
     /// <param name="forceThief">Whether to force this customer to be a thief</param>
-    private void SpawnCustomer(bool forceThief = false)
+    /// <param name="usedPrefabIndices">List of prefab indices already used in this wave to avoid duplicates</param>
+    private void SpawnCustomer(bool forceThief = false, List<int> usedPrefabIndices = null)
     {
         if (customerPrefabs == null || customerPrefabs.Length == 0 || spawnPoint == null)
         {
@@ -545,8 +752,30 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Randomly select a customer prefab
-        int randomPrefabIndex = Random.Range(0, customerPrefabs.Length);
+        // Select a customer prefab that hasn't been used in this wave
+        int randomPrefabIndex;
+        int attempts = 0;
+        int maxAttempts = customerPrefabs.Length * 2; // Prevent infinite loops
+        
+        do
+        {
+            randomPrefabIndex = Random.Range(0, customerPrefabs.Length);
+            attempts++;
+            
+            // If we've tried too many times or no used list provided, just use any prefab
+            if (attempts >= maxAttempts || usedPrefabIndices == null)
+            {
+                break;
+            }
+        }
+        while (usedPrefabIndices.Contains(randomPrefabIndex));
+        
+        // Add this prefab to the used list if provided
+        if (usedPrefabIndices != null && !usedPrefabIndices.Contains(randomPrefabIndex))
+        {
+            usedPrefabIndices.Add(randomPrefabIndex);
+        }
+        
         GameObject selectedPrefab = customerPrefabs[randomPrefabIndex];
         
         if (selectedPrefab == null)
@@ -781,15 +1010,33 @@ public class GameManager : MonoBehaviour
     /// <param name="dayPassed">Whether the player passed the day</param>
     private void ShowEndOfDayPanel(bool dayPassed)
     {
+        Debug.Log($"=== SHOWING END OF DAY PANEL ===");
+        Debug.Log($"Day passed: {dayPassed}");
+        Debug.Log($"endOfDayPanel null: {endOfDayPanel == null}");
+        Debug.Log($"summaryText null: {summaryText == null}");
+        
         if (endOfDayPanel != null)
         {
             endOfDayPanel.SetActive(true);
+            Debug.Log("End of day panel activated");
             
             if (summaryText != null)
             {
                 string summary = GenerateDaySummary(dayPassed);
                 summaryText.text = summary;
+                Debug.Log("Summary text updated");
             }
+            else
+            {
+                Debug.LogWarning("summaryText is null - assign it in the Inspector!");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("endOfDayPanel is null - assign it in the Inspector!");
+            // Fallback: Show summary in console
+            string summary = GenerateDaySummary(dayPassed);
+            Debug.Log($"DAY SUMMARY (UI not assigned):\n{summary}");
         }
     }
 
@@ -839,15 +1086,15 @@ public class GameManager : MonoBehaviour
         
         if (!dayPassed)
         {
-            summary += "You must restart this day.";
+            summary += "You must restart this day.\n\nPress G to restart day.";
         }
         else if (currentDay >= 5)
         {
-            summary += "CONGRATULATIONS! You've completed all 5 days!";
+            summary += "CONGRATULATIONS! You've completed all 5 days!\n\nPress G to restart game.";
         }
         else
         {
-            summary += "Ready for the next day!";
+            summary += "Ready for the next day!\n\nPress G to continue to next day.";
         }
         
         return summary;
