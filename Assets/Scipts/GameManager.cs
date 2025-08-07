@@ -31,6 +31,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI dayText;
     [SerializeField] private TextMeshProUGUI timeText;
+    [SerializeField] private TextMeshProUGUI dayTimeText; // New field for day time display
     [SerializeField] private TextMeshProUGUI waveText;
     [SerializeField] private TextMeshProUGUI statusText;
     [SerializeField] private GameObject endOfDayPanel;
@@ -92,7 +93,7 @@ public class GameManager : MonoBehaviour
             
         // Set up instructions text
         if (instructionsText != null)
-            instructionsText.text = "Press Y to Apprehend, N to Release";
+            instructionsText.text = "Press Y to Apprehend \n Press N to Cancel";
 
         // Initialize UI displays
         UpdateAllUI();
@@ -192,6 +193,7 @@ public class GameManager : MonoBehaviour
         if (!gameActive) 
         {
             UpdateTimeDisplay(); // Still update time display for UI
+            UpdateDayTimeDisplay(); // Still update day time display for UI
             return;
         }
 
@@ -219,6 +221,7 @@ public class GameManager : MonoBehaviour
 
         // Update UI
         UpdateTimeDisplay();
+        UpdateDayTimeDisplay();
     }
 
     #region Day Management
@@ -239,6 +242,9 @@ public class GameManager : MonoBehaviour
         isResting = false;
         dayComplete = false;
         gameActive = true;
+
+        // Reset score to 0 at the beginning of each day
+        playerScore = 0;
 
         // Clear tracking lists
         thiefsCaughtToday.Clear();
@@ -633,7 +639,15 @@ public class GameManager : MonoBehaviour
         {
             if (customer != null)
             {
-                // Make customer walk to exit
+                // Get the Thief component and force the customer to exit
+                Thief thiefScript = customer.GetComponent<Thief>();
+                if (thiefScript != null)
+                {
+                    // Override current behavior and force exit
+                    thiefScript.ForceExit(exitPoint);
+                }
+                
+                // Make customer walk to exit (this will now work properly since ForceExit was called)
                 StartCoroutine(MakeCustomerWalkToExit(customer));
             }
         }
@@ -656,50 +670,50 @@ public class GameManager : MonoBehaviour
             yield break;
         }
 
-        // Get the NavMeshAgent component to make customer walk to exit
+        // Get the NavMeshAgent component
         UnityEngine.AI.NavMeshAgent navAgent = customer.GetComponent<UnityEngine.AI.NavMeshAgent>();
         if (navAgent != null)
         {
-            // Enable the agent and set destination
-            navAgent.enabled = true;
-            navAgent.isStopped = false;
+            // Wait for customer to reach the exit or timeout after reasonable time
+            float timeout = 15f; // 15 seconds max to reach exit
+            float timer = 0f;
+            Vector3 lastPosition = customer.transform.position;
+            float stuckTimer = 0f;
             
-            // Try to set destination, but handle cases where it might fail
-            if (navAgent.SetDestination(exitPoint.position))
+            while (timer < timeout && customer != null)
             {
-                // Wait for customer to reach the exit or timeout after reasonable time
-                float timeout = 15f; // 15 seconds max to reach exit
-                float timer = 0f;
-                Vector3 lastPosition = customer.transform.position;
-                float stuckTimer = 0f;
-                
-                while (timer < timeout && customer != null)
+                // Check if customer is close to exit point
+                if (Vector3.Distance(customer.transform.position, exitPoint.position) < 2f)
                 {
-                    // Check if customer is close to exit point
-                    if (Vector3.Distance(customer.transform.position, exitPoint.position) < 2f)
+                    Debug.Log($"Customer {customer.name} reached exit successfully");
+                    break;
+                }
+                
+                // Check if customer is stuck (not moving for 3 seconds)
+                if (Vector3.Distance(customer.transform.position, lastPosition) < 0.1f)
+                {
+                    stuckTimer += Time.deltaTime;
+                    if (stuckTimer > 3f)
                     {
+                        Debug.Log($"Customer {customer.name} appears stuck, teleporting to exit");
+                        customer.transform.position = exitPoint.position;
                         break;
                     }
-                    
-                    // Check if customer is stuck (not moving for 3 seconds)
-                    if (Vector3.Distance(customer.transform.position, lastPosition) < 0.1f)
-                    {
-                        stuckTimer += Time.deltaTime;
-                        if (stuckTimer > 3f)
-                        {
-                            customer.transform.position = exitPoint.position;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        stuckTimer = 0f;
-                        lastPosition = customer.transform.position;
-                    }
-                    
-                    timer += Time.deltaTime;
-                    yield return null;
                 }
+                else
+                {
+                    stuckTimer = 0f;
+                    lastPosition = customer.transform.position;
+                }
+                
+                timer += Time.deltaTime;
+                yield return null;
+            }
+            
+            if (timer >= timeout)
+            {
+                Debug.Log($"Customer {customer.name} timed out, forcing to exit");
+                customer.transform.position = exitPoint.position;
             }
         }
         else
@@ -927,6 +941,7 @@ public class GameManager : MonoBehaviour
         UpdateDayDisplay();
         UpdateWaveDisplay();
         UpdateStatusDisplay();
+        UpdateDayTimeDisplay();
     }
 
     /// <summary>
@@ -973,7 +988,7 @@ public class GameManager : MonoBehaviour
             if (dayRequirements.ContainsKey(currentDay))
             {
                 var req = dayRequirements[currentDay];
-                statusText.text = $"Target: {req.score} pts | Thieves: {thievesSpawnedToday}/{req.thieves}";
+                statusText.text = $"Target score to pass day: \n{req.score} pts \n\nThieves Caught: \n{thievesSpawnedToday}/{req.thieves}";
             }
         }
     }
@@ -985,10 +1000,36 @@ public class GameManager : MonoBehaviour
     {
         if (timeText != null)
         {
-            float timeRemaining = dayDuration - dayTimer;
-            int minutes = Mathf.FloorToInt(timeRemaining / 60f);
-            int seconds = Mathf.FloorToInt(timeRemaining % 60f);
-            
+            if (isInWave)
+            {
+                // Show time remaining in current wave
+                float waveTimeRemaining = waveDuration - waveTimer;
+                int minutes = Mathf.FloorToInt(waveTimeRemaining / 60f);
+                int seconds = Mathf.FloorToInt(waveTimeRemaining % 60f);
+                timeText.text = $"Wave Time: {minutes:00}:{seconds:00}";
+            }
+            else if (isResting)
+            {
+                // Show rest time remaining
+                float restTimeRemaining = restDuration - restTimer;
+                int restSeconds = Mathf.FloorToInt(restTimeRemaining);
+                timeText.text = $"Rest Time: {restSeconds}s";
+            }
+            else
+            {
+                // Show preparing message
+                timeText.text = "Preparing...";
+            }
+        }
+    }
+
+    /// <summary>
+    /// Updates the day time display UI.
+    /// </summary>
+    private void UpdateDayTimeDisplay()
+    {
+        if (dayTimeText != null)
+        {
             // Convert to in-game time (12am to 9am = 9 hours over 4 minutes)
             float gameTimeProgress = dayTimer / dayDuration;
             float gameHour = 0f + (gameTimeProgress * 9f); // 12am = 0, 9am = 9
@@ -997,10 +1038,10 @@ public class GameManager : MonoBehaviour
             
             string period = "AM";
             int displayHour12 = displayHour;
-            if (displayHour == 0) displayHour12 = 12;
+            if (displayHour == 0) displayHour12 = 12; // 0 = 12 AM
             else if (displayHour > 12) { displayHour12 = displayHour - 12; period = "PM"; }
             
-            timeText.text = $"{displayHour12:00}:{displayMinute:00} {period} | {minutes:00}:{seconds:00}";
+            dayTimeText.text = $"{displayHour12:00}:{displayMinute:00} {period}";
         }
     }
 

@@ -115,12 +115,22 @@ public class Thief : MonoBehaviour
             Debug.LogWarning($"No Animator component found on {gameObject.name}");
         }
         
-        // Basic NavMeshAgent setup
+        // Basic NavMeshAgent setup with collision avoidance
         if (myAgent != null)
         {
             myAgent.stoppingDistance = stopDistance;
             myAgent.autoBraking = true;
             myAgent.autoRepath = true;
+            
+            // Enable obstacle avoidance to prevent customers from colliding
+            myAgent.obstacleAvoidanceType = UnityEngine.AI.ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+            myAgent.avoidancePriority = Random.Range(1, 99); // Random priority between 1-98 (0 and 99 are special cases)
+            myAgent.radius = 0.5f; // Set appropriate radius for the customer
+            myAgent.height = 2.0f; // Set appropriate height for the customer
+            
+            // Fine-tune avoidance behavior
+            myAgent.baseOffset = 0f; // Keep agents grounded
+            myAgent.speed = Random.Range(2.5f, 4.0f); // Slight speed variation to help with natural movement
         }
         else
         {
@@ -267,6 +277,9 @@ public class Thief : MonoBehaviour
         myAgent.SetDestination(destination.position);
 
         // Wait until we reach the destination
+        float stuckTimer = 0f;
+        Vector3 lastPosition = transform.position;
+        
         while (currentState == "Moving")
         {
             if (!myAgent.pathPending && myAgent.remainingDistance <= stopDistance)
@@ -274,6 +287,26 @@ public class Thief : MonoBehaviour
                 StartCoroutine(SwitchState("AtShelf"));
                 yield break;
             }
+            
+            // Check if agent is stuck (not moving for too long) and give it a small nudge
+            if (Vector3.Distance(transform.position, lastPosition) < 0.1f)
+            {
+                stuckTimer += 0.5f;
+                if (stuckTimer > 3f)
+                {
+                    // Agent seems stuck, try to repath or wait a bit for other agents to move
+                    myAgent.ResetPath();
+                    yield return new WaitForSeconds(Random.Range(0.5f, 1.5f));
+                    myAgent.SetDestination(destination.position);
+                    stuckTimer = 0f;
+                }
+            }
+            else
+            {
+                stuckTimer = 0f;
+                lastPosition = transform.position;
+            }
+            
             yield return new WaitForSeconds(0.5f);
         }
     }
@@ -440,5 +473,63 @@ public class Thief : MonoBehaviour
     public bool IsConfirmedThief()
     {
         return currentWarningCount >= 3;
+    }
+
+    /// <summary>
+    /// Forces the customer to stop their current behavior and head directly to the exit.
+    /// This overrides any current navigation or behavior states.
+    /// </summary>
+    /// <param name="exitPoint">The exit point Transform to navigate to</param>
+    public void ForceExit(Transform exitPoint)
+    {
+        if (exitPoint == null)
+        {
+            Debug.LogWarning($"ForceExit called on {gameObject.name} but exitPoint is null!");
+            return;
+        }
+
+        // Stop all current coroutines to halt current behavior
+        StopAllCoroutines();
+        
+        // Clear the current state
+        currentState = "Exiting";
+        
+        // Enable the NavMeshAgent and clear any existing path
+        if (myAgent != null)
+        {
+            myAgent.isStopped = false;
+            myAgent.updateRotation = true;
+            myAgent.ResetPath(); // Clear any existing path
+            
+            // Increase speed slightly for exiting and ensure good avoidance
+            myAgent.speed = myAgent.speed * 1.2f; // 20% faster when exiting
+            myAgent.obstacleAvoidanceType = UnityEngine.AI.ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+            
+            // Set destination to exit
+            if (myAgent.SetDestination(exitPoint.position))
+            {
+                Debug.Log($"Customer {gameObject.name} forced to exit - heading to exit point");
+            }
+            else
+            {
+                Debug.LogWarning($"Failed to set exit destination for {gameObject.name}");
+                // Fallback: teleport to exit if pathfinding fails
+                transform.position = exitPoint.position;
+            }
+        }
+        
+        // Set walking animation
+        if (animator != null)
+        {
+            animator.SetBool("IsWalking", true);
+            animator.SetBool("IsIdle", false);
+        }
+        
+        // Hide any active warning sign
+        if (warningSign != null)
+        {
+            warningSign.SetActive(false);
+        }
+        IsShowingWarning = false;
     }
 }

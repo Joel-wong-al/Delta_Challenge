@@ -17597,7 +17597,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 128}
+  m_AnchoredPosition: {x: 0, y: -66.76002}
   m_SizeDelta: {x: 534.0989, y: 133.52}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &790193947
@@ -17654,7 +17654,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -28286,6 +28286,7 @@ MonoBehaviour:
   scoreText: {fileID: 288883797}
   dayText: {fileID: 1716330609}
   timeText: {fileID: 1841617757}
+  dayTimeText: {fileID: 0}
   waveText: {fileID: 2124912563}
   statusText: {fileID: 698372002}
   endOfDayPanel: {fileID: 1913816121}
@@ -40343,8 +40344,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 42, y: -294}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 47.28, y: -304}
+  m_SizeDelta: {x: -788.2721, y: -692.8486}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1880271028
 MonoBehaviour:
@@ -40359,7 +40360,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.33962262, g: 0.33962262, b: 0.33962262, a: 0.78039217}
+  m_Color: {r: 0.20754719, g: 0.20754719, b: 0.20754719, a: 0.84313726}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
