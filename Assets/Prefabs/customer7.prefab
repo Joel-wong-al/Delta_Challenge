@@ -771,9 +771,9 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
-  m_Size: {x: 2.3945692, y: 4.2029443, z: 1}
+  m_Size: {x: 1.34, y: 4.2029443, z: 1}
   m_Center: {x: 0.052675802, y: 1.6014712, z: 5.958233e-15}
 --- !u!114 &6458760241724135063
 MonoBehaviour:
@@ -792,6 +792,16 @@ MonoBehaviour:
   animator: {fileID: 2612923179207576057}
   warningSign: {fileID: 7803252756397706333}
   totalWarningsToShow: 0
+  debugInfo:
+    enableDebugLogs: 1
+    enableGizmos: 1
+    lastMovementTime: 0
+    lastKnownPosition: {x: 0, y: 0, z: 0}
+    lastAction: 
+    stuckCount: 0
+    totalStuckTime: 0
+    isCurrentlyStuck: 0
+    currentStuckDuration: 0
 --- !u!1 &2102305032195807751
 GameObject:
   m_ObjectHideFlags: 0
