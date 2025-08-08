@@ -3469,6 +3469,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2101887772323269263, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d14e610e608c5b24e9ae17c5e67d4acd, type: 2}
     - target: {fileID: 3418467441284264040, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 9.272
@@ -5188,6 +5192,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2101887772323269263, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 35b7fe2e63aa4554fab2769f80c0dd01, type: 2}
     - target: {fileID: 3418467441284264040, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 9.272
@@ -34238,6 +34246,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2101887772323269263, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: bbbbae41dd5a63b40a2f9d02bf3ebea3, type: 2}
     - target: {fileID: 3418467441284264040, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 7.769
@@ -47238,6 +47250,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2101887772323269263, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 6afaabcac416f92448e77b14c5b8626f, type: 2}
     - target: {fileID: 3418467441284264040, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
       propertyPath: m_LocalPosition.x
       value: 7.769
