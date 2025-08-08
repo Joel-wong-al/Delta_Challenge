@@ -93,6 +93,12 @@ public class CameraSystem : MonoBehaviour
 
     void Update()
     {
+        // Don't process any input if the game is paused
+        if (gameManager != null && gameManager.IsPaused())
+        {
+            return;
+        }
+
         // Check for F key to return to main camera
         if (Input.GetKeyDown(KeyCode.F) && isViewingMonitor)
         {
@@ -156,6 +162,12 @@ public class CameraSystem : MonoBehaviour
         currentMonitorIndex = monitorIndex;
         isViewingMonitor = true;
 
+        // Hide crosshair when viewing monitors
+        if (gameManager != null)
+        {
+            gameManager.HideCrosshair();
+        }
+
         // Lock camera movement by disabling the player object
         if (playerObject != null)
         {
@@ -205,6 +217,11 @@ public class CameraSystem : MonoBehaviour
         }
 
         // Re-enable the player object
+        if (playerObject == null)
+        {
+            playerObject = GameObject.FindGameObjectWithTag("Player");
+        }
+        
         if (playerObject != null)
         {
             Debug.Log($"Re-enabling player object: {playerObject.name}");
@@ -224,6 +241,12 @@ public class CameraSystem : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         Debug.Log("Cursor locked for first-person view");
+
+        // Show crosshair when returning to main camera
+        if (gameManager != null)
+        {
+            gameManager.ShowCrosshair();
+        }
 
         // Reset state
         isViewingMonitor = false;

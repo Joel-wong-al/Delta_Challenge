@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 using System.Collections;
+using StarterAssets;
 
 [System.Serializable]
 public class DayRequirement
@@ -39,12 +40,19 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI summaryText;
     [SerializeField] private GameObject gameOverPanel;
     [SerializeField] private TextMeshProUGUI gameOverText;
+    [SerializeField] private GameObject crosshairUI; // Crosshair to hide/show during camera switching
 
     [Header("Pause Menu")]
     [SerializeField] private GameObject pauseMenuPanel;
     [SerializeField] private UnityEngine.UI.Button resumeButton;
     [SerializeField] private UnityEngine.UI.Button restartButton;
     [SerializeField] private UnityEngine.UI.Button quitButton;
+
+    [Header("Player References")]
+    [SerializeField] private GameObject playerObject; // Reference to the player GameObject
+    [SerializeField] private Transform playerSpawnPoint; // Where the player should spawn/respawn
+    [SerializeField] private CameraSystem cameraSystem; // Reference to the camera system
+    [SerializeField] private PlayerBehaviour playerBehaviour; // Reference to the player behaviour
 
     // Gameplay Flow Variables
     [Header("Gameplay Settings")]
@@ -66,6 +74,10 @@ public class GameManager : MonoBehaviour
     private bool gameActive = false;
     private bool dayComplete = false;
     private bool isPaused = false;
+    
+    // Cursor state management
+    private CursorLockMode previousCursorLockState;
+    private bool previousCursorVisible;
 
     // Current wave/day tracking
     private List<GameObject> activeCustomers = new List<GameObject>();
@@ -297,6 +309,9 @@ public class GameManager : MonoBehaviour
         
         // Clear any remaining customers from previous day
         ClearAllCustomers();
+        
+        // Respawn player at starting position and reset camera
+        RespawnPlayer();
         
         // Start first wave after brief delay
         StartCoroutine(StartWaveAfterDelay(2f));
@@ -775,7 +790,10 @@ public class GameManager : MonoBehaviour
             // Thief escaped - penalty
             playerScore -= 100;
             thiefsEscapedToday.Add($"Thief #{thievesSpawnedToday} (escaped)");
-            Debug.Log($"Thief escaped! -100 points. Score: {playerScore}");
+            Debug.Log($"Thief escaped! -100 points. Trust Fund: {playerScore}");
+            
+            // Update UI immediately to reflect the new score
+            UpdateAllUI();
         }
         
         // Remove customer from tracking and destroy
@@ -905,8 +923,11 @@ public class GameManager : MonoBehaviour
                 playerScore += 100;
                 thievesCaughtToday++;
                 thiefsCaughtToday.Add($"Thief #{thievesSpawnedToday} (confirmed, 3 warnings)");
-                Debug.Log($"CORRECT! Apprehended confirmed thief. +100 points. Score: {playerScore}");
+                Debug.Log($"CORRECT! Apprehended confirmed thief. +100 points. Trust Fund: {playerScore}");
                 ShowFeedback("CORRECT! Thief Apprehended! +100 points", Color.green);
+                
+                // Update UI immediately to reflect the new thief count
+                UpdateAllUI();
             }
             else if (isActualThief && warningCount >= 1 && warningCount < 3)
             {
@@ -914,22 +935,31 @@ public class GameManager : MonoBehaviour
                 playerScore -= 50;
                 thievesCaughtToday++;
                 thiefsCaughtToday.Add($"Thief #{thievesSpawnedToday} (early arrest, {warningCount} warnings)");
-                Debug.Log($"PARTIAL! Apprehended thief early ({warningCount} warnings). -50 points. Score: {playerScore}");
+                Debug.Log($"PARTIAL! Apprehended thief early ({warningCount} warnings). -50 points. Trust Fund: {playerScore}");
                 ShowFeedback($"EARLY ARREST! Only {warningCount} warnings! -50 points", Color.yellow);
+                
+                // Update UI immediately to reflect the new thief count
+                UpdateAllUI();
             }
             else if (!isActualThief && warningCount >= 1 && warningCount < 3)
             {
                 // Apprehended innocent with some warnings  
                 playerScore -= 50;
-                Debug.Log($"WRONG! Apprehended innocent with {warningCount} warnings. -50 points. Score: {playerScore}");
+                Debug.Log($"WRONG! Apprehended innocent with {warningCount} warnings. -50 points. Trust Fund: {playerScore}");
                 ShowFeedback($"WRONG! Innocent with {warningCount} warnings! -50 points", Color.yellow);
+                
+                // Update UI immediately to reflect the new score
+                UpdateAllUI();
             }
             else
             {
                 // Completely innocent customer (0 warnings)
                 playerScore -= 100;
-                Debug.Log($"WRONG! Apprehended innocent customer. -100 points. Score: {playerScore}");
+                Debug.Log($"WRONG! Apprehended innocent customer. -100 points. Trust Fund: {playerScore}");
                 ShowFeedback("WRONG! Innocent Customer! -100 points", Color.red);
+                
+                // Update UI immediately to reflect the new score
+                UpdateAllUI();
             }
             
             // Remove customer from store and tracking
@@ -985,7 +1015,7 @@ public class GameManager : MonoBehaviour
     private void UpdateScoreDisplay()
     {
         if (scoreText != null)
-            scoreText.text = $"Score: {playerScore}";
+            scoreText.text = $"Trust Fund: {playerScore}";
     }
 
     /// <summary>
@@ -1023,7 +1053,7 @@ public class GameManager : MonoBehaviour
             if (dayRequirements.ContainsKey(currentDay))
             {
                 var req = dayRequirements[currentDay];
-                statusText.text = $"Target score to pass day: \n{req.score} pts \n\nThieves Caught: \n{thievesSpawnedToday}/{req.thieves}";
+                statusText.text = $"Trust fund to pass day: \n{req.score} pts \n\nThieves Caught: \n{thievesSpawnedToday}/{req.thieves}";
             }
         }
     }
@@ -1127,7 +1157,7 @@ public class GameManager : MonoBehaviour
         
         string summary = $"=== DAY {currentDay} SUMMARY ===\n\n";
         summary += $"Trust Fund Balance: {playerScore} points\n";
-        summary += $"Required Score: {req.score} points\n\n";
+        summary += $"Required Trust Fund: {req.score} points\n\n";
         
         summary += $"Thieves Spawned: {thievesSpawnedToday}/{req.thieves}\n";
         summary += $"Thieves Caught: {thievesCaughtToday}\n\n";
@@ -1187,7 +1217,7 @@ public class GameManager : MonoBehaviour
             
             if (gameOverText != null)
             {
-                gameOverText.text = $"CONGRATULATIONS!\n\nYou've successfully completed all 5 days!\n\nFinal Score: {playerScore} points";
+                gameOverText.text = $"CONGRATULATIONS!\n\nYou've successfully completed all 5 days!\n\nFinal Trust Fund: {playerScore} points";
             }
         }
     }
@@ -1217,10 +1247,24 @@ public class GameManager : MonoBehaviour
         isPaused = true;
         Time.timeScale = 0f; // Pause all time-based operations
         
+        // Save current cursor state
+        previousCursorLockState = Cursor.lockState;
+        previousCursorVisible = Cursor.visible;
+        
+        // Unlock and show cursor for pause menu interaction
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        
+        // Disable player controls
+        DisablePlayerControls();
+        
+        // Disable camera switching
+        DisableCameraSwitching();
+        
         if (pauseMenuPanel != null)
             pauseMenuPanel.SetActive(true);
             
-        Debug.Log("Game paused");
+        Debug.Log("Game paused - all controls disabled");
     }
 
     /// <summary>
@@ -1231,10 +1275,218 @@ public class GameManager : MonoBehaviour
         isPaused = false;
         Time.timeScale = 1f; // Resume normal time
         
+        // Restore previous cursor state
+        Cursor.lockState = previousCursorLockState;
+        Cursor.visible = previousCursorVisible;
+        
+        // Re-enable player controls
+        EnablePlayerControls();
+        
+        // Re-enable camera switching
+        EnableCameraSwitching();
+        
         if (pauseMenuPanel != null)
             pauseMenuPanel.SetActive(false);
             
-        Debug.Log("Game resumed");
+        Debug.Log("Game resumed - all controls enabled");
+    }
+
+    /// <summary>
+    /// Disables all player movement and camera controls during pause.
+    /// </summary>
+    private void DisablePlayerControls()
+    {
+        if (playerObject == null)
+        {
+            // Try to find the player object automatically
+            playerObject = GameObject.FindGameObjectWithTag("Player");
+            if (playerObject == null)
+            {
+                Debug.LogWarning("Player object not found for control disabling!");
+                return;
+            }
+        }
+
+        // Disable FirstPersonController
+        var fpController = playerObject.GetComponent<FirstPersonController>();
+        if (fpController != null)
+        {
+            fpController.enabled = false;
+        }
+
+        // Disable StarterAssetsInputs
+        var starterInputs = playerObject.GetComponent<StarterAssetsInputs>();
+        if (starterInputs != null)
+        {
+            starterInputs.enabled = false;
+        }
+
+        // Disable any other movement components as needed
+        var characterController = playerObject.GetComponent<CharacterController>();
+        if (characterController != null)
+        {
+            // Don't disable CharacterController as it might cause physics issues
+            // Just let FirstPersonController being disabled handle the movement
+        }
+
+        Debug.Log("Player controls disabled");
+    }
+
+    /// <summary>
+    /// Re-enables all player movement and camera controls after pause.
+    /// </summary>
+    private void EnablePlayerControls()
+    {
+        if (playerObject == null) return;
+
+        // Re-enable FirstPersonController
+        var fpController = playerObject.GetComponent<FirstPersonController>();
+        if (fpController != null)
+        {
+            fpController.enabled = true;
+        }
+
+        // Re-enable StarterAssetsInputs
+        var starterInputs = playerObject.GetComponent<StarterAssetsInputs>();
+        if (starterInputs != null)
+        {
+            starterInputs.enabled = true;
+        }
+
+        Debug.Log("Player controls enabled");
+    }
+
+    /// <summary>
+    /// Disables camera switching during pause.
+    /// </summary>
+    private void DisableCameraSwitching()
+    {
+        if (cameraSystem != null)
+        {
+            cameraSystem.enabled = false;
+        }
+
+        if (playerBehaviour != null)
+        {
+            playerBehaviour.enabled = false;
+        }
+
+        Debug.Log("Camera switching disabled");
+    }
+
+    /// <summary>
+    /// Re-enables camera switching after pause.
+    /// </summary>
+    private void EnableCameraSwitching()
+    {
+        if (cameraSystem != null)
+        {
+            cameraSystem.enabled = true;
+        }
+
+        if (playerBehaviour != null)
+        {
+            playerBehaviour.enabled = true;
+        }
+
+        Debug.Log("Camera switching enabled");
+    }
+
+    /// <summary>
+    /// Public method to check if the game is currently paused.
+    /// </summary>
+    public bool IsPaused()
+    {
+        return isPaused;
+    }
+
+    /// <summary>
+    /// Respawns the player at the designated spawn point and resets camera to main view.
+    /// </summary>
+    private void RespawnPlayer()
+    {
+        if (playerObject == null)
+        {
+            // Try to find the player object automatically
+            playerObject = GameObject.FindGameObjectWithTag("Player");
+            if (playerObject == null)
+            {
+                Debug.LogWarning("Player object not found for respawning!");
+                return;
+            }
+        }
+
+        if (playerSpawnPoint == null)
+        {
+            Debug.LogWarning("Player spawn point not assigned! Player position will not be reset.");
+            return;
+        }
+
+        // Disable CharacterController temporarily to allow position change
+        var characterController = playerObject.GetComponent<CharacterController>();
+        bool wasControllerEnabled = false;
+        if (characterController != null)
+        {
+            wasControllerEnabled = characterController.enabled;
+            characterController.enabled = false;
+        }
+
+        // Reset player position and rotation
+        playerObject.transform.position = playerSpawnPoint.position;
+        playerObject.transform.rotation = playerSpawnPoint.rotation;
+
+        // Re-enable CharacterController
+        if (characterController != null)
+        {
+            characterController.enabled = wasControllerEnabled;
+        }
+
+        // Ensure player is active
+        if (!playerObject.activeInHierarchy)
+        {
+            playerObject.SetActive(true);
+        }
+
+        // Return to main camera view if currently viewing monitors
+        if (cameraSystem == null)
+        {
+            cameraSystem = FindFirstObjectByType<CameraSystem>();
+        }
+        
+        if (cameraSystem != null)
+        {
+            Debug.Log("Calling ReturnToMainCamera from respawn...");
+            cameraSystem.ReturnToMainCamera();
+            Debug.Log("Camera returned to main view");
+        }
+        else
+        {
+            Debug.LogWarning("CameraSystem not found for camera reset!");
+        }
+
+        Debug.Log($"Player respawned at position: {playerSpawnPoint.position}");
+    }
+
+    /// <summary>
+    /// Hides the crosshair UI (called when switching to monitor view).
+    /// </summary>
+    public void HideCrosshair()
+    {
+        if (crosshairUI != null)
+        {
+            crosshairUI.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Shows the crosshair UI (called when returning to main camera view).
+    /// </summary>
+    public void ShowCrosshair()
+    {
+        if (crosshairUI != null)
+        {
+            crosshairUI.SetActive(true);
+        }
     }
 
     /// <summary>
@@ -1252,8 +1504,11 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Quit button pressed");
         
-        // Resume time before quitting (good practice)
-        Time.timeScale = 1f;
+        // Properly restore game state before quitting (good practice)
+        if (isPaused)
+        {
+            ResumeGame(); // This ensures all controls are restored
+        }
         
         #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
@@ -1271,17 +1526,14 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void OnNextDayButton()
     {
-        // Resume game state before proceeding
+        // Ensure all controls are properly restored before proceeding
         if (isPaused)
         {
-            isPaused = false;
-            Time.timeScale = 1f;
+            ResumeGame(); // This handles all control restoration properly
         }
         
         if (endOfDayPanel != null)
             endOfDayPanel.SetActive(false);
-        if (pauseMenuPanel != null)
-            pauseMenuPanel.SetActive(false);
             
         NextDay();
     }
@@ -1291,17 +1543,14 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void OnRestartDayButton()
     {
-        // Resume game state before restarting
+        // Ensure all controls are properly restored before restarting
         if (isPaused)
         {
-            isPaused = false;
-            Time.timeScale = 1f;
+            ResumeGame(); // This handles all control restoration properly
         }
         
         if (endOfDayPanel != null)
             endOfDayPanel.SetActive(false);
-        if (pauseMenuPanel != null)
-            pauseMenuPanel.SetActive(false);
             
         RestartDay();
     }
@@ -1311,11 +1560,10 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void OnRestartGameButton()
     {
-        // Resume game state before restarting
+        // Ensure all controls are properly restored before restarting
         if (isPaused)
         {
-            isPaused = false;
-            Time.timeScale = 1f;
+            ResumeGame(); // This handles all control restoration properly
         }
         
         currentDay = 1;
@@ -1325,8 +1573,6 @@ public class GameManager : MonoBehaviour
             endOfDayPanel.SetActive(false);
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
-        if (pauseMenuPanel != null)
-            pauseMenuPanel.SetActive(false);
             
         StartDay();
     }
