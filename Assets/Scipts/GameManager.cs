@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 using System.Collections;
@@ -39,6 +40,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject gameOverPanel;
     [SerializeField] private TextMeshProUGUI gameOverText;
 
+    [Header("Pause Menu")]
+    [SerializeField] private GameObject pauseMenuPanel;
+    [SerializeField] private UnityEngine.UI.Button resumeButton;
+    [SerializeField] private UnityEngine.UI.Button restartButton;
+    [SerializeField] private UnityEngine.UI.Button quitButton;
+
     // Gameplay Flow Variables
     [Header("Gameplay Settings")]
     [SerializeField] private float dayDuration = 240f; // 4 minutes per day
@@ -58,6 +65,7 @@ public class GameManager : MonoBehaviour
     private bool isResting = false;
     private bool gameActive = false;
     private bool dayComplete = false;
+    private bool isPaused = false;
 
     // Current wave/day tracking
     private List<GameObject> activeCustomers = new List<GameObject>();
@@ -104,14 +112,41 @@ public class GameManager : MonoBehaviour
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
 
+        // Initialize pause menu
+        if (pauseMenuPanel != null)
+        {
+            pauseMenuPanel.SetActive(false);
+            
+            // Set up button listeners
+            if (resumeButton != null)
+                resumeButton.onClick.AddListener(OnResumeButton);
+            if (restartButton != null)
+                restartButton.onClick.AddListener(OnRestartDayButton);
+            if (quitButton != null)
+                quitButton.onClick.AddListener(OnQuitButton);
+        }
+
         // Start the first day
         StartDay();
     }
 
     void Update()
     {
-        // Handle keyboard input for apprehension decision (only when game is active)
-        if (gameActive && awaitingPlayerDecision)
+        // Handle pause menu input (ESC key)
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (isPaused)
+            {
+                ResumeGame();
+            }
+            else
+            {
+                PauseGame();
+            }
+        }
+
+        // Handle keyboard input for apprehension decision (only when game is active and not paused)
+        if (gameActive && !isPaused && awaitingPlayerDecision)
         {
             if (Input.GetKeyDown(KeyCode.Y))
             {
@@ -123,8 +158,8 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // Handle day progression input (works even when game is not active)
-        if (Input.GetKeyDown(KeyCode.G))
+        // Handle day progression input (works even when game is not active, but not when paused)
+        if (!isPaused && Input.GetKeyDown(KeyCode.G))
         {
             Debug.Log($"G pressed - dayComplete: {dayComplete}");
             if (!dayComplete)
@@ -133,8 +168,8 @@ public class GameManager : MonoBehaviour
             }
         }
         
-        // DEBUG: Press K to instantly end day and catch all thieves (works even when game is not active)
-        if (Input.GetKeyDown(KeyCode.K))
+        // DEBUG: Press K to instantly end day and catch all thieves (works even when game is not active, but not when paused)
+        if (!isPaused && Input.GetKeyDown(KeyCode.K))
         {
             Debug.Log("DEBUG: K pressed - Instantly ending day and catching all thieves");
             
@@ -155,7 +190,7 @@ public class GameManager : MonoBehaviour
             EndDay();
         }
         
-        if (dayComplete && Input.GetKeyDown(KeyCode.G))
+        if (!isPaused && dayComplete && Input.GetKeyDown(KeyCode.G))
         {
             Debug.Log("G pressed - Day progression triggered");
             
@@ -189,8 +224,8 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // Only run game logic when gameActive is true
-        if (!gameActive) 
+        // Only run game logic when gameActive is true and not paused
+        if (!gameActive || isPaused) 
         {
             UpdateTimeDisplay(); // Still update time display for UI
             UpdateDayTimeDisplay(); // Still update day time display for UI
@@ -1170,6 +1205,65 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
+    #region Pause System
+
+    /// <summary>
+    /// Pauses the game and shows the pause menu.
+    /// </summary>
+    private void PauseGame()
+    {
+        if (dayComplete) return; // Don't allow pause when day is complete
+        
+        isPaused = true;
+        Time.timeScale = 0f; // Pause all time-based operations
+        
+        if (pauseMenuPanel != null)
+            pauseMenuPanel.SetActive(true);
+            
+        Debug.Log("Game paused");
+    }
+
+    /// <summary>
+    /// Resumes the game and hides the pause menu.
+    /// </summary>
+    private void ResumeGame()
+    {
+        isPaused = false;
+        Time.timeScale = 1f; // Resume normal time
+        
+        if (pauseMenuPanel != null)
+            pauseMenuPanel.SetActive(false);
+            
+        Debug.Log("Game resumed");
+    }
+
+    /// <summary>
+    /// Button method for resuming the game from pause menu.
+    /// </summary>
+    public void OnResumeButton()
+    {
+        ResumeGame();
+    }
+
+    /// <summary>
+    /// Button method for quitting the game from pause menu.
+    /// </summary>
+    public void OnQuitButton()
+    {
+        Debug.Log("Quit button pressed");
+        
+        // Resume time before quitting (good practice)
+        Time.timeScale = 1f;
+        
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
+    }
+
+    #endregion
+
     #region Public Button Methods (for UI)
 
     /// <summary>
@@ -1177,8 +1271,17 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void OnNextDayButton()
     {
+        // Resume game state before proceeding
+        if (isPaused)
+        {
+            isPaused = false;
+            Time.timeScale = 1f;
+        }
+        
         if (endOfDayPanel != null)
             endOfDayPanel.SetActive(false);
+        if (pauseMenuPanel != null)
+            pauseMenuPanel.SetActive(false);
             
         NextDay();
     }
@@ -1188,8 +1291,17 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void OnRestartDayButton()
     {
+        // Resume game state before restarting
+        if (isPaused)
+        {
+            isPaused = false;
+            Time.timeScale = 1f;
+        }
+        
         if (endOfDayPanel != null)
             endOfDayPanel.SetActive(false);
+        if (pauseMenuPanel != null)
+            pauseMenuPanel.SetActive(false);
             
         RestartDay();
     }
@@ -1199,6 +1311,13 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void OnRestartGameButton()
     {
+        // Resume game state before restarting
+        if (isPaused)
+        {
+            isPaused = false;
+            Time.timeScale = 1f;
+        }
+        
         currentDay = 1;
         playerScore = 0;
         
@@ -1206,6 +1325,8 @@ public class GameManager : MonoBehaviour
             endOfDayPanel.SetActive(false);
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
+        if (pauseMenuPanel != null)
+            pauseMenuPanel.SetActive(false);
             
         StartDay();
     }
