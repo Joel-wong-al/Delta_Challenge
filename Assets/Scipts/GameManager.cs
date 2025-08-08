@@ -4,6 +4,7 @@ using TMPro;
 using System.Collections.Generic;
 using System.Collections;
 using StarterAssets;
+using UnityEngine.Rendering;
 
 [System.Serializable]
 public class DayRequirement
@@ -41,6 +42,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject gameOverPanel;
     [SerializeField] private TextMeshProUGUI gameOverText;
     [SerializeField] private GameObject crosshairUI; // Crosshair to hide/show during camera switching
+
+    [Header("Post Processing")]
+    [SerializeField] private Volume cctvVolume; // Volume with CCTV post-processing effects
+    [SerializeField] private Volume firstPersonVolume; // Volume with first-person post-processing effects
 
     [Header("Pause Menu")]
     [SerializeField] private GameObject pauseMenuPanel;
@@ -137,6 +142,9 @@ public class GameManager : MonoBehaviour
             if (quitButton != null)
                 quitButton.onClick.AddListener(OnQuitButton);
         }
+
+        // Initialize post-processing effects (start with first-person)
+        EnableFirstPersonEffects();
 
         // Start the first day
         StartDay();
@@ -1486,6 +1494,42 @@ public class GameManager : MonoBehaviour
         if (crosshairUI != null)
         {
             crosshairUI.SetActive(true);
+        }
+    }
+
+    /// <summary>
+    /// Enables CCTV post-processing effects and disables first-person effects.
+    /// </summary>
+    public void EnableCCTVEffects()
+    {
+        if (cctvVolume != null)
+        {
+            cctvVolume.enabled = true;
+            Debug.Log("CCTV post-processing effects enabled");
+        }
+
+        if (firstPersonVolume != null)
+        {
+            firstPersonVolume.enabled = false;
+            Debug.Log("First-person post-processing effects disabled");
+        }
+    }
+
+    /// <summary>
+    /// Enables first-person post-processing effects and disables CCTV effects.
+    /// </summary>
+    public void EnableFirstPersonEffects()
+    {
+        if (firstPersonVolume != null)
+        {
+            firstPersonVolume.enabled = true;
+            Debug.Log("First-person post-processing effects enabled");
+        }
+
+        if (cctvVolume != null)
+        {
+            cctvVolume.enabled = false;
+            Debug.Log("CCTV post-processing effects disabled");
         }
     }
 

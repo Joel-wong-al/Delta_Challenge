@@ -6618,7 +6618,7 @@ GameObject:
   - component: {fileID: 238412408}
   - component: {fileID: 238412407}
   - component: {fileID: 238412406}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cashier_Camera_F (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -16264,55 +16264,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6fa89dc034a9beb428889a618d40eef7, type: 3}
---- !u!1 &600089951
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 600089953}
-  - component: {fileID: 600089952}
-  m_Layer: 0
-  m_Name: firstperson_Filter
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &600089952
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 600089951}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IsGlobal: 1
-  priority: 0
-  blendDistance: 0
-  weight: 1
-  sharedProfile: {fileID: 11400000, guid: b25f94855cf42f845bfc736a50d04d47, type: 2}
---- !u!4 &600089953
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 600089951}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.1652194, y: 0.37087017, z: -8.676784}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &600094056
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22980,7 +22931,7 @@ GameObject:
   - component: {fileID: 832304955}
   - component: {fileID: 832304954}
   - component: {fileID: 832304953}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cashier_Camera_F (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -35747,8 +35698,6 @@ MonoBehaviour:
   gameOverPanel: {fileID: 1933618522}
   gameOverText: {fileID: 423222586}
   crosshairUI: {fileID: 1309288124}
-  cctvVolume: {fileID: 1926608558}
-  firstPersonVolume: {fileID: 600089952}
   pauseMenuPanel: {fileID: 595471716}
   resumeButton: {fileID: 597075695}
   restartButton: {fileID: 1541157372}
@@ -52368,13 +52317,13 @@ GameObject:
   m_Component:
   - component: {fileID: 1926608559}
   - component: {fileID: 1926608558}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: cctv_Filter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1926608558
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -58246,7 +58195,7 @@ GameObject:
   - component: {fileID: 2106487593}
   - component: {fileID: 2106487592}
   - component: {fileID: 2106487591}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cashier_Camera_F
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -59860,7 +59809,7 @@ GameObject:
   - component: {fileID: 2140672837}
   - component: {fileID: 2140672836}
   - component: {fileID: 2140672835}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cashier_Camera_F (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -60526,7 +60475,6 @@ SceneRoots:
   m_Roots:
   - {fileID: 1573025236}
   - {fileID: 1926608559}
-  - {fileID: 600089953}
   - {fileID: 1549821857}
   - {fileID: 1639289515}
   - {fileID: 1215411678}

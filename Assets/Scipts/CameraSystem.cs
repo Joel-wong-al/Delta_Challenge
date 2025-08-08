@@ -1,6 +1,6 @@
 /******************************************************************************
  * File: CameraSystem.cs
- * Author: Javier
+ * Author: Javier, Zenon, Joel
  * Created: [Insert Date]
  * Description: Manages switching between the main player camera and monitor cameras.
  *              Players can click on Monitor objects to view their respective cameras,
@@ -166,6 +166,7 @@ public class CameraSystem : MonoBehaviour
         if (gameManager != null)
         {
             gameManager.HideCrosshair();
+            gameManager.EnableCCTVEffects();
         }
 
         // Lock camera movement by disabling the player object
@@ -246,6 +247,7 @@ public class CameraSystem : MonoBehaviour
         if (gameManager != null)
         {
             gameManager.ShowCrosshair();
+            gameManager.EnableFirstPersonEffects();
         }
 
         // Reset state
