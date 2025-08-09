@@ -80,6 +80,11 @@ public class GameManager : MonoBehaviour
     private bool dayComplete = false;
     private bool isPaused = false;
     
+    // Preparation phase
+    private bool isInPreparation = false;
+    private float preparationTimer = 0f;
+    private float preparationDuration = 8f; // 8 seconds preparation time
+    
     // Cursor state management
     private CursorLockMode previousCursorLockState;
     private bool previousCursorVisible;
@@ -244,6 +249,26 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        // Handle preparation phase
+        if (isInPreparation)
+        {
+            preparationTimer += Time.deltaTime;
+            
+            if (preparationTimer >= preparationDuration)
+            {
+                // Preparation phase complete, start the actual game
+                isInPreparation = false;
+                gameActive = true;
+                
+                Debug.Log("Preparation phase complete - starting first wave");
+                StartCoroutine(StartWaveAfterDelay(1f));
+            }
+            
+            UpdateTimeDisplay(); // Update UI during preparation
+            UpdateDayTimeDisplay();
+            return; // Don't run normal game logic during preparation
+        }
+
         // Only run game logic when gameActive is true and not paused
         if (!gameActive || isPaused) 
         {
@@ -321,10 +346,22 @@ public class GameManager : MonoBehaviour
         // Respawn player at starting position and reset camera
         RespawnPlayer();
         
-        // Start first wave after brief delay
-        StartCoroutine(StartWaveAfterDelay(2f));
+        // Start preparation phase instead of immediately starting the first wave
+        StartPreparationPhase();
         
         UpdateAllUI();
+    }
+
+    /// <summary>
+    /// Starts the preparation phase before the day begins.
+    /// </summary>
+    private void StartPreparationPhase()
+    {
+        isInPreparation = true;
+        preparationTimer = 0f;
+        gameActive = false; // Prevent normal game logic from running
+        
+        Debug.Log($"Day {currentDay} preparation phase started - {preparationDuration} seconds to get ready");
     }
 
     /// <summary>
@@ -1042,7 +1079,12 @@ public class GameManager : MonoBehaviour
     {
         if (waveText != null)
         {
-            if (isInWave)
+            if (isInPreparation)
+            {
+                int remainingSeconds = Mathf.CeilToInt(preparationDuration - preparationTimer);
+                waveText.text = $"Get Ready! Starting in {remainingSeconds}s";
+            }
+            else if (isInWave)
                 waveText.text = $"Wave {currentWave}/4";
             else if (isResting)
                 waveText.text = $"Rest Period (Timer Paused)";
