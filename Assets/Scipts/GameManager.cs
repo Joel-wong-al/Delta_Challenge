@@ -51,7 +51,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject pauseMenuPanel;
     [SerializeField] private UnityEngine.UI.Button resumeButton;
     [SerializeField] private UnityEngine.UI.Button restartButton;
-    [SerializeField] private UnityEngine.UI.Button quitButton;
+    [SerializeField] private UnityEngine.UI.Button mainMenuButton;
 
     [Header("Player References")]
     [SerializeField] private GameObject playerObject; // Reference to the player GameObject
@@ -144,8 +144,8 @@ public class GameManager : MonoBehaviour
                 resumeButton.onClick.AddListener(OnResumeButton);
             if (restartButton != null)
                 restartButton.onClick.AddListener(OnRestartDayButton);
-            if (quitButton != null)
-                quitButton.onClick.AddListener(OnQuitButton);
+            if (mainMenuButton != null)
+                mainMenuButton.onClick.AddListener(OnMainMenuButton);
         }
 
         // Initialize post-processing effects (start with first-person)
@@ -1584,23 +1584,20 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Button method for quitting the game from pause menu.
+    /// Button method for returning to main menu from pause menu.
     /// </summary>
-    public void OnQuitButton()
+    public void OnMainMenuButton()
     {
-        Debug.Log("Quit button pressed");
+        Debug.Log("Main Menu button pressed");
         
-        // Properly restore game state before quitting (good practice)
+        // Properly restore game state before loading main menu
         if (isPaused)
         {
             ResumeGame(); // This ensures all controls are restored
         }
         
-        #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-        #else
-            Application.Quit();
-        #endif
+        // Load the main menu scene (scene index 0)
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 
     #endregion

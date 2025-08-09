@@ -1,3 +1,11 @@
+/******************************************************************************
+* File: SlidingDoor.cs
+* Author: Javier, Zenon, Joel
+* Created: 9 August 2025
+* Description: Controls the behavior of a sliding door, including opening and closing
+*              based on customer proximity.
+******************************************************************************/
+
 using UnityEngine;
 
 public class SlidingDoor : MonoBehaviour
