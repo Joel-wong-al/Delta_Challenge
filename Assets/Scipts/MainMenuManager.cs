@@ -75,16 +75,33 @@ public class MainMenuManager : MonoBehaviour
     
     public void StartGame()
     {
-        SceneManager.LoadScene(1); // Loads scene at index 1 in Build Settings
+        // Use smooth transition instead of direct scene loading
+        if (SceneTransitionManager.Instance != null)
+        {
+            SceneTransitionManager.Instance.TransitionToScene(2, 1.5f); // GameScene with 1.5s fade
+        }
+        else
+        {
+            SceneManager.LoadScene(2); // Fallback to direct loading
+        }
     }
     
     /// <summary>
-    /// Loads the tutorial scene
+    /// Loads the tutorial scene (or game scene if tutorial is integrated)
     /// </summary>
     public void StartTutorial()
     {
         Debug.Log("Loading tutorial...");
-        SceneManager.LoadScene(2); // Loads tutorial scene at index 2 in Build Settings
+        
+        // Use smooth transition instead of direct scene loading
+        if (SceneTransitionManager.Instance != null)
+        {
+            SceneTransitionManager.Instance.TransitionToScene(3, 1.5f); // Tutorial with 1.5s fade
+        }
+        else
+        {
+            SceneManager.LoadScene(3); // Fallback to direct loading
+        }
     }
     
     /// <summary>

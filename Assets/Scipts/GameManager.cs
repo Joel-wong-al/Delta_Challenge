@@ -527,8 +527,20 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        currentDay++;
-        StartDay();
+        // Use smooth transition for day change
+        if (SceneTransitionManager.Instance != null)
+        {
+            SceneTransitionManager.Instance.FadeTransition(2f, 1f, () => {
+                currentDay++;
+                StartDay();
+            });
+        }
+        else
+        {
+            // Fallback without transition
+            currentDay++;
+            StartDay();
+        }
     }
 
     /// <summary>
@@ -536,8 +548,18 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void RestartDay()
     {
-        // Reset score to beginning of day value (could be implemented with checkpoints)
-        StartDay();
+        // Use smooth transition for day restart
+        if (SceneTransitionManager.Instance != null)
+        {
+            SceneTransitionManager.Instance.FadeTransition(2f, 1f, () => {
+                StartDay();
+            });
+        }
+        else
+        {
+            // Fallback without transition
+            StartDay();
+        }
     }
 
     #endregion
@@ -1593,11 +1615,26 @@ public class GameManager : MonoBehaviour
         // Properly restore game state before loading main menu
         if (isPaused)
         {
-            ResumeGame(); // This ensures all controls are restored
+            // Don't call ResumeGame() as it will restore game cursor state
+            // Instead, manually reset what we need
+            isPaused = false;
+            Time.timeScale = 1f; // Resume normal time
         }
         
-        // Load the main menu scene (scene index 0)
-        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+        // Ensure cursor is properly set for main menu
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        
+        // Use smooth transition instead of direct scene loading
+        if (SceneTransitionManager.Instance != null)
+        {
+            SceneTransitionManager.Instance.TransitionToScene(1, 1f); // Main menu with 1s fade
+        }
+        else
+        {
+            // Fallback to direct loading
+            UnityEngine.SceneManagement.SceneManager.LoadScene(1);
+        }
     }
 
     #endregion
