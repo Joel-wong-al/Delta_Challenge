@@ -21,6 +21,19 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField]
     private Button quitButton;
 
+    [Header("Tutorial Slideshow")]
+    [SerializeField]
+    private GameObject tutorialPanel; // Panel that contains the slideshow
+    [SerializeField]
+    private UnityEngine.UI.Image tutorialImage; // Image component to display slides
+    [SerializeField]
+    private Sprite[] tutorialSlides; // Array of tutorial images
+    [SerializeField]
+    private UnityEngine.UI.Text slideCounterText; // Optional: shows "1/5" etc.
+
+    private int currentSlideIndex = 0;
+    private bool inTutorialMode = false;
+
     [Header("Background Camera Animation")]
     [SerializeField]
     private Camera backgroundCamera;
@@ -42,6 +55,12 @@ public class MainMenuManager : MonoBehaviour
         if (backgroundCamera != null)
         {
             originalRotation = backgroundCamera.transform.eulerAngles;
+        }
+
+        // Initialize tutorial slideshow
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.SetActive(false);
         }
 
         // Automatically assign button functions
@@ -69,6 +88,18 @@ public class MainMenuManager : MonoBehaviour
             Vector3 newRotation = originalRotation + (rockingAxis * rockOffset);
             backgroundCamera.transform.eulerAngles = newRotation;
         }
+
+        // Handle tutorial slideshow navigation
+        if (inTutorialMode && Input.GetKeyDown(KeyCode.G))
+        {
+            NextSlide();
+        }
+
+        // Handle ESC key to exit tutorial
+        if (inTutorialMode && Input.GetKeyDown(KeyCode.Escape))
+        {
+            ExitTutorial();
+        }
     }
 
 
@@ -87,21 +118,95 @@ public class MainMenuManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Loads the tutorial scene (or game scene if tutorial is integrated)
+    /// Shows the tutorial slideshow instead of loading tutorial scene
     /// </summary>
     public void StartTutorial()
     {
-        Debug.Log("Loading tutorial...");
+        Debug.Log("Starting tutorial slideshow...");
         
-        // Use smooth transition instead of direct scene loading
-        if (SceneTransitionManager.Instance != null)
+        if (tutorialSlides == null || tutorialSlides.Length == 0)
         {
-            SceneTransitionManager.Instance.TransitionToScene(3, 1.5f); // Tutorial with 1.5s fade
+            Debug.LogWarning("No tutorial slides assigned!");
+            return;
+        }
+
+        // Hide menu buttons instead of entire UI to keep tutorial panel visible
+        if (startButton != null)
+            startButton.gameObject.SetActive(false);
+        if (tutorialButton != null)
+            tutorialButton.gameObject.SetActive(false);
+        if (quitButton != null)
+            quitButton.gameObject.SetActive(false);
+        
+        if (tutorialPanel != null)
+            tutorialPanel.SetActive(true);
+
+        // Reset to first slide
+        currentSlideIndex = 0;
+        inTutorialMode = true;
+        
+        // Display first slide
+        DisplayCurrentSlide();
+    }
+
+    /// <summary>
+    /// Advances to the next slide or exits tutorial if on last slide
+    /// </summary>
+    private void NextSlide()
+    {
+        currentSlideIndex++;
+        
+        if (currentSlideIndex >= tutorialSlides.Length)
+        {
+            // Reached the end, exit tutorial
+            ExitTutorial();
         }
         else
         {
-            SceneManager.LoadScene(3); // Fallback to direct loading
+            // Display next slide
+            DisplayCurrentSlide();
         }
+    }
+
+    /// <summary>
+    /// Displays the current slide and updates UI elements
+    /// </summary>
+    private void DisplayCurrentSlide()
+    {
+        if (tutorialImage != null && tutorialSlides != null && currentSlideIndex < tutorialSlides.Length)
+        {
+            tutorialImage.sprite = tutorialSlides[currentSlideIndex];
+        }
+
+        // Update slide counter if available
+        if (slideCounterText != null && tutorialSlides != null)
+        {
+            slideCounterText.text = $"{currentSlideIndex + 1}/{tutorialSlides.Length}";
+        }
+
+        Debug.Log($"Showing tutorial slide {currentSlideIndex + 1}/{tutorialSlides.Length}");
+    }
+
+    /// <summary>
+    /// Exits the tutorial and returns to main menu
+    /// </summary>
+    private void ExitTutorial()
+    {
+        Debug.Log("Exiting tutorial...");
+        
+        inTutorialMode = false;
+        currentSlideIndex = 0;
+
+        // Hide tutorial panel and show menu buttons again
+        if (tutorialPanel != null)
+            tutorialPanel.SetActive(false);
+        
+        if (startButton != null)
+            startButton.gameObject.SetActive(true);
+        if (tutorialButton != null)
+            tutorialButton.gameObject.SetActive(true);
+        if (quitButton != null)
+            quitButton.gameObject.SetActive(true);
     }
     
     /// <summary>
