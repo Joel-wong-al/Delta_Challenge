@@ -95,6 +95,7 @@ public class GameManager : MonoBehaviour
     private List<GameObject> activeCustomers = new List<GameObject>();
     private List<string> thiefsCaughtToday = new List<string>();
     private List<string> thiefsEscapedToday = new List<string>();
+    private List<int> disabledCameras = new List<int>(); // Track cameras that are offline
     private int thiefCountForDay = 0;
     private int thievesSpawnedToday = 0;
     private int thievesCaughtToday = 0;
@@ -362,11 +363,16 @@ public class GameManager : MonoBehaviour
         // Reset score to 0 at the beginning of each day
         playerScore = 0;
 
-        // Clear tracking lists
+        // Clear tracking lists and disabled cameras from previous day
         thiefsCaughtToday.Clear();
         thiefsEscapedToday.Clear();
+        disabledCameras.Clear(); // Clear disabled cameras each day
         thievesSpawnedToday = 0;
         thievesCaughtToday = 0;
+        
+        // Restore all camera texture objects at start of each day
+        if (cameraSystem != null)
+            cameraSystem.RestoreAllCameraTextures();
 
         // Update UI immediately with new day values
         UpdateTrustFundDisplay();
@@ -391,6 +397,9 @@ public class GameManager : MonoBehaviour
         
         // Start preparation phase instead of immediately starting the first wave
         StartPreparationPhase();
+        
+        // Disable a random camera for days 4 and 5
+        DisableRandomCamera();
         
         UpdateAllUI();
     }
@@ -1058,6 +1067,13 @@ public class GameManager : MonoBehaviour
         currentThief = thiefScript;
         awaitingPlayerDecision = true;
 
+        // Reset the popup text to show apprehension options (in case it was changed by camera offline popup)
+        TextMeshProUGUI popupText = apprehensionPopup.GetComponentInChildren<TextMeshProUGUI>();
+        if (popupText != null)
+        {
+            popupText.text = "Press Y to Apprehend \n Press N to Cancel";
+        }
+
         // Show the popup
         apprehensionPopup.SetActive(true);
     }
@@ -1486,6 +1502,91 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
+    #region Camera Management
+
+    /// <summary>
+    /// Disables a random camera for days 4 and 5.
+    /// </summary>
+    private void DisableRandomCamera()
+    {
+        if (currentDay < 4 || cameraSystem == null) return;
+
+        // Get total number of cameras from the camera system
+        int totalCameras = cameraSystem.GetMonitorCameraCount();
+        if (totalCameras <= 0) return;
+
+        // Pick a random camera (disabled cameras list should already be cleared in StartDay)
+        int randomCamera = Random.Range(0, totalCameras);
+        disabledCameras.Add(randomCamera);
+        
+        // Deactivate the texture object for the disabled camera
+        cameraSystem.SetCameraTextureActive(randomCamera, false);
+        
+        ShowFeedback($"Security Camera {randomCamera + 1} has malfunctioned!", Color.red);
+        Debug.Log($"Camera {randomCamera + 1} has been disabled for Day {currentDay}");
+    }
+
+    /// <summary>
+    /// Restores all cameras to working condition.
+    /// </summary>
+    private void RestoreAllCameras()
+    {
+        disabledCameras.Clear();
+        if (apprehensionPopup != null)
+            apprehensionPopup.SetActive(false);
+        
+        // Restore all camera texture objects to active
+        if (cameraSystem != null)
+            cameraSystem.RestoreAllCameraTextures();
+        
+        Debug.Log("All cameras restored to working condition");
+    }
+
+    /// <summary>
+    /// Checks if a camera is currently disabled.
+    /// </summary>
+    /// <param name="cameraIndex">Index of the camera to check</param>
+    /// <returns>True if the camera is disabled</returns>
+    public bool IsCameraDisabled(int cameraIndex)
+    {
+        return disabledCameras.Contains(cameraIndex);
+    }
+
+    /// <summary>
+    /// Shows the camera offline popup message using the apprehension popup.
+    /// </summary>
+    public void ShowCameraOfflinePopup()
+    {
+        // Don't show if we're already waiting for a player decision
+        if (awaitingPlayerDecision) return;
+        
+        if (apprehensionPopup != null)
+        {
+            // Find the text component in the popup and set it to "Camera Offline"
+            TextMeshProUGUI popupText = apprehensionPopup.GetComponentInChildren<TextMeshProUGUI>();
+            if (popupText != null)
+            {
+                popupText.text = "Camera Offline";
+            }
+            
+            apprehensionPopup.SetActive(true);
+            // Auto-hide after 2 seconds
+            StartCoroutine(HideCameraOfflinePopupAfterDelay(2f));
+        }
+    }
+
+    /// <summary>
+    /// Hides the camera offline popup after a delay.
+    /// </summary>
+    private System.Collections.IEnumerator HideCameraOfflinePopupAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (apprehensionPopup != null)
+            apprehensionPopup.SetActive(false);
+    }
+
+    #endregion
+
     #region Pause System
 
     /// <summary>
@@ -1893,8 +1994,14 @@ public class GameManager : MonoBehaviour
         playerScore = 0;
         gameCompleted = false; // Reset completion flag
         
+        // Restore all cameras when restarting the game
+        RestoreAllCameras();
+        
         if (endOfDayPanel != null)
             endOfDayPanel.SetActive(false);
+        
+        // Restore all cameras to working condition
+        RestoreAllCameras();
             
         StartDay();
     }

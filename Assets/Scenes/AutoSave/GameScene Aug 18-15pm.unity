@@ -4331,6 +4331,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4655401781616965473, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
+      propertyPath: cameraIndex
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 6352560273952841647, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
@@ -30889,7 +30893,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 16}
+  m_AnchoredPosition: {x: 0, y: -66.76002}
   m_SizeDelta: {x: 534.0989, y: 133.52}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &790193947
@@ -30947,7 +30951,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
+  m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -30980,7 +30984,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &790193948
@@ -45775,6 +45779,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4655401781616965473, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
+      propertyPath: cameraIndex
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6352560273952841647, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
@@ -51957,7 +51965,7 @@ MonoBehaviour:
   - {fileID: 2140672837}
   - {fileID: 238412408}
   - {fileID: 832304955}
-  cameraTextureObjects:
+  monitorObjects:
   - {fileID: 709302544}
   - {fileID: 543041059}
   - {fileID: 709134721}
@@ -61758,6 +61766,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4655401781616965473, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
+      propertyPath: cameraIndex
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 6352560273952841647, guid: 26029bce4f9dd4c4881ec604392d33f3, type: 3}
       propertyPath: m_StaticEditorFlags
       value: 2147483647
@@ -66276,7 +66288,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1880271027
 RectTransform:
   m_ObjectHideFlags: 0

@@ -31,6 +31,12 @@ public class CameraSystem : MonoBehaviour
     [SerializeField] private Camera[] monitorCameras;
 
     /// <summary>
+    /// Array of texture objects that correspond to each camera.
+    /// These objects will be set to inactive when their camera is offline.
+    /// </summary>
+    [SerializeField] private GameObject[] cameraTextureObjects;
+
+    /// <summary>
     /// Reference to the player GameObject to disable input components when viewing monitors.
     /// </summary>
     [SerializeField] private GameObject playerObject;
@@ -139,6 +145,14 @@ public class CameraSystem : MonoBehaviour
         if (monitorCameras[monitorIndex] == null)
         {
             Debug.LogWarning($"CameraSystem: Monitor camera at index {monitorIndex} is null");
+            return;
+        }
+
+        // Check if the camera is disabled
+        if (gameManager != null && gameManager.IsCameraDisabled(monitorIndex))
+        {
+            Debug.Log($"CameraSystem: Camera {monitorIndex + 1} is offline");
+            gameManager.ShowCameraOfflinePopup();
             return;
         }
 
@@ -583,5 +597,53 @@ public class CameraSystem : MonoBehaviour
             }
         }
         glowObjects.Clear();
+    }
+
+    /// <summary>
+    /// Gets the total number of monitor cameras.
+    /// </summary>
+    /// <returns>The number of monitor cameras</returns>
+    public int GetMonitorCameraCount()
+    {
+        return monitorCameras != null ? monitorCameras.Length : 0;
+    }
+
+    /// <summary>
+    /// Sets the active state of a camera's texture object.
+    /// </summary>
+    /// <param name="cameraIndex">Index of the camera</param>
+    /// <param name="active">Whether the texture object should be active</param>
+    public void SetCameraTextureActive(int cameraIndex, bool active)
+    {
+        if (cameraTextureObjects == null || cameraIndex < 0 || cameraIndex >= cameraTextureObjects.Length)
+        {
+            Debug.LogWarning($"CameraSystem: Invalid camera index {cameraIndex} or cameraTextureObjects not assigned");
+            return;
+        }
+
+        GameObject textureObject = cameraTextureObjects[cameraIndex];
+        if (textureObject != null)
+        {
+            textureObject.SetActive(active);
+            Debug.Log($"Camera {cameraIndex + 1} texture object set to: {(active ? "active" : "inactive")}");
+        }
+        else
+        {
+            Debug.LogWarning($"Camera texture object at index {cameraIndex} is null");
+        }
+    }
+
+    /// <summary>
+    /// Restores all camera texture objects to active state.
+    /// </summary>
+    public void RestoreAllCameraTextures()
+    {
+        if (cameraTextureObjects == null) return;
+
+        for (int i = 0; i < cameraTextureObjects.Length; i++)
+        {
+            SetCameraTextureActive(i, true);
+        }
+        Debug.Log("All camera texture objects restored to active");
     }
 }
