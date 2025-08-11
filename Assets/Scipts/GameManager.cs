@@ -39,8 +39,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI thiefText; // Thief numerical indicator
     [SerializeField] private GameObject endOfDayPanel;
     [SerializeField] private TextMeshProUGUI summaryText;
-    [SerializeField] private GameObject gameOverPanel;
-    [SerializeField] private TextMeshProUGUI gameOverText;
     [SerializeField] private GameObject crosshairUI; // Crosshair to hide/show during camera switching
 
     [Header("Post Processing")]
@@ -81,6 +79,7 @@ public class GameManager : MonoBehaviour
     private bool isResting = false;
     private bool gameActive = false;
     private bool dayComplete = false;
+    private bool gameCompleted = false; // Track if all 5 days are completed
     private bool isPaused = false;
     
     // Preparation phase
@@ -135,8 +134,6 @@ public class GameManager : MonoBehaviour
         // Hide end panels
         if (endOfDayPanel != null)
             endOfDayPanel.SetActive(false);
-        if (gameOverPanel != null)
-            gameOverPanel.SetActive(false);
 
         // Initialize pause menu
         if (pauseMenuPanel != null)
@@ -214,6 +211,28 @@ public class GameManager : MonoBehaviour
             }
         }
         
+        // DEBUG: Press J to instantly end day and catch all thieves (works even when game is not active, but not when paused)
+        if (!isPaused && Input.GetKeyDown(KeyCode.J))
+        {
+            Debug.Log("DEBUG: J pressed - Instantly ending day and catching all thieves");
+            
+            // Set score high enough to pass any day
+            playerScore = 1000;
+            
+            // Mark all thieves as caught
+            thievesCaughtToday = thievesSpawnedToday;
+            for (int i = 1; i <= thievesSpawnedToday; i++)
+            {
+                if (!thiefsCaughtToday.Contains($"Thief #{i} (debug catch)"))
+                {
+                    thiefsCaughtToday.Add($"Thief #{i} (debug catch)");
+                }
+            }
+            
+            // Force end the day
+            EndDay();
+        }
+        
         if (!isPaused && dayComplete && Input.GetKeyDown(KeyCode.G))
         {
             Debug.Log("G pressed - Day progression triggered");
@@ -221,8 +240,6 @@ public class GameManager : MonoBehaviour
             // Hide the end of day panel first
             if (endOfDayPanel != null)
                 endOfDayPanel.SetActive(false);
-            if (gameOverPanel != null)
-                gameOverPanel.SetActive(false);
                 
             // Check if day was passed to determine action
             bool dayPassed = CheckDayRequirements();
@@ -234,11 +251,27 @@ public class GameManager : MonoBehaviour
                 Debug.Log("Day failed - restarting current day");
                 RestartDay();
             }
-            else if (currentDay >= 5)
+            else if (gameCompleted)
             {
-                // Game complete, restart entire game
-                Debug.Log("Game complete - restarting game");
-                OnRestartGameButton();
+                // Game completed, go to main menu with transition
+                Debug.Log("Game completed - returning to main menu");
+                
+                // Ensure cursor is unlocked for main menu
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                
+                if (SceneTransitionManager.Instance != null)
+                {
+                    SceneTransitionManager.Instance.FadeTransition(2f, 1f, () => {
+                        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+                    });
+                }
+                else
+                {
+                    // Fallback if no transition manager
+                    UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+                }
+                return;
             }
             else
             {
@@ -277,8 +310,8 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Update day timer only during active waves (not during rest periods)
-        if (isInWave)
+        // Update day timer during active gameplay (not during preparation)
+        if (!isInPreparation && gameActive)
         {
             dayTimer += Time.deltaTime;
         }
@@ -293,8 +326,8 @@ public class GameManager : MonoBehaviour
             HandleRestUpdate();
         }
 
-        // Check if day is complete (only check during waves, not rest periods)
-        if (isInWave && dayTimer >= dayDuration && !dayComplete)
+        // Check if day is complete
+        if (dayTimer >= dayDuration && !dayComplete && gameActive)
         {
             EndDay();
         }
@@ -501,7 +534,13 @@ public class GameManager : MonoBehaviour
         // Check if day requirements are met
         bool dayPassed = CheckDayRequirements();
         
-        if (dayPassed)
+        // Check if this is the final day (Day 5)
+        if (currentDay >= 5)
+        {
+            gameCompleted = true;
+            ShowEndOfDayPanelForCompletion(dayPassed);
+        }
+        else if (dayPassed)
         {
             ShowEndOfDayPanel(true);
         }
@@ -534,10 +573,17 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void NextDay()
     {
+        if (gameCompleted)
+        {
+            // Game was completed, this should not happen as the button should load main menu
+            Debug.LogWarning("NextDay() called after game completion - this should not happen!");
+            return;
+        }
+        
         if (currentDay >= 5)
         {
-            // Game complete!
-            ShowGameComplete();
+            // This should not happen anymore since completion is handled in EndDay()
+            Debug.LogWarning("NextDay() called on day 5 or higher - completion should be handled in EndDay()!");
             return;
         }
 
@@ -879,6 +925,21 @@ public class GameManager : MonoBehaviour
         
         // Remove customer from tracking and destroy
         activeCustomers.Remove(customer);
+        
+        // Safely destroy customer by disabling NavMeshAgent first
+        UnityEngine.AI.NavMeshAgent navAgent = customer.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (navAgent != null)
+        {
+            navAgent.enabled = false;
+        }
+        
+        // Stop any running coroutines on the Thief component
+        Thief thiefComponent = customer.GetComponent<Thief>();
+        if (thiefComponent != null)
+        {
+            thiefComponent.StopAllCoroutines();
+        }
+        
         Destroy(customer);
     }
 
@@ -957,7 +1018,23 @@ public class GameManager : MonoBehaviour
         foreach (GameObject customer in activeCustomers)
         {
             if (customer != null)
+            {
+                // Disable NavMeshAgent to prevent errors when destroying
+                UnityEngine.AI.NavMeshAgent navAgent = customer.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                if (navAgent != null)
+                {
+                    navAgent.enabled = false;
+                }
+                
+                // Stop any running coroutines on the Thief component
+                Thief thiefComponent = customer.GetComponent<Thief>();
+                if (thiefComponent != null)
+                {
+                    thiefComponent.StopAllCoroutines();
+                }
+                
                 Destroy(customer);
+            }
         }
         activeCustomers.Clear();
     }
@@ -1043,6 +1120,21 @@ public class GameManager : MonoBehaviour
             
             // Remove customer from store and tracking
             activeCustomers.Remove(currentCustomer);
+            
+            // Safely destroy customer by disabling NavMeshAgent first
+            UnityEngine.AI.NavMeshAgent navAgent = currentCustomer.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (navAgent != null)
+            {
+                navAgent.enabled = false;
+            }
+            
+            // Stop any running coroutines on the Thief component
+            Thief thiefComponent = currentCustomer.GetComponent<Thief>();
+            if (thiefComponent != null)
+            {
+                thiefComponent.StopAllCoroutines();
+            }
+            
             Destroy(currentCustomer);
         }
 
@@ -1289,6 +1381,57 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Shows the end of day panel with game completion message.
+    /// </summary>
+    /// <param name="dayPassed">Whether the player passed the final day</param>
+    private void ShowEndOfDayPanelForCompletion(bool dayPassed)
+    {
+        Debug.Log($"=== SHOWING GAME COMPLETION PANEL ===");
+        
+        if (endOfDayPanel != null)
+        {
+            endOfDayPanel.SetActive(true);
+            
+            if (summaryText != null)
+            {
+                // Show normal day summary first
+                var req = dayRequirements.ContainsKey(currentDay) ? dayRequirements[currentDay] : new DayRequirement(0, 0);
+                
+                string summary = $"=== DAY {currentDay} SUMMARY ===\n\n";
+                summary += $"Trust Fund Balance: {playerScore} points\n";
+                summary += $"Required Trust Fund: {req.score} points\n\n";
+                
+                summary += $"Thieves Spawned: {thievesSpawnedToday}/{req.thieves}\n";
+                summary += $"Thieves Caught: {thievesCaughtToday}\n";
+                summary += $"Thieves Escaped: {thiefsEscapedToday.Count}\n\n";
+                
+                // Show day result
+                if (dayPassed)
+                {
+                    summary += $"=== <color=green>DAY PASSED!</color> ===\n\n";
+                }
+                else
+                {
+                    summary += $"=== <color=red>DAY FAILED!</color> ===\n\n";
+                }
+                
+                // Add game completion message
+                summary += $"=== GAME COMPLETED! ===\n\n";
+                summary += $"CONGRATULATIONS!\n";
+                summary += $"You've successfully completed all 5 days!\n\n";
+                summary += $"Press G to return to Main Menu";
+                
+                summaryText.text = summary;
+                Debug.Log("Game completion summary displayed");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("endOfDayPanel is null - cannot show completion message!");
+        }
+    }
+
+    /// <summary>
     /// Generates the end-of-day summary text.
     /// </summary>
     /// <param name="dayPassed">Whether the player passed the day</param>
@@ -1302,35 +1445,17 @@ public class GameManager : MonoBehaviour
         summary += $"Required Trust Fund: {req.score} points\n\n";
         
         summary += $"Thieves Spawned: {thievesSpawnedToday}/{req.thieves}\n";
-        summary += $"Thieves Caught: {thievesCaughtToday}\n\n";
+        summary += $"Thieves Caught: {thievesCaughtToday}\n";
+        summary += $"Thieves Escaped: {thiefsEscapedToday.Count}\n\n";
         
-        summary += "THIEVES CAUGHT TODAY:\n";
-        if (thiefsCaughtToday.Count > 0)
+        if (dayPassed)
         {
-            foreach (string thief in thiefsCaughtToday)
-            {
-                summary += $"• {thief}\n";
-            }
+            summary += $"=== <color=green>DAY PASSED!</color> ===\n";
         }
         else
         {
-            summary += "• None\n";
+            summary += $"=== <color=red>DAY FAILED!</color> ===\n";
         }
-        
-        summary += "\nTHIEVES ESCAPED:\n";
-        if (thiefsEscapedToday.Count > 0)
-        {
-            foreach (string thief in thiefsEscapedToday)
-            {
-                summary += $"• {thief}\n";
-            }
-        }
-        else
-        {
-            summary += "• None\n";
-        }
-        
-        summary += $"\n=== {(dayPassed ? "DAY PASSED!" : "DAY FAILED!")} ===\n";
         
         if (!dayPassed)
         {
@@ -1346,22 +1471,6 @@ public class GameManager : MonoBehaviour
         }
         
         return summary;
-    }
-
-    /// <summary>
-    /// Shows the game complete screen.
-    /// </summary>
-    private void ShowGameComplete()
-    {
-        if (gameOverPanel != null)
-        {
-            gameOverPanel.SetActive(true);
-            
-            if (gameOverText != null)
-            {
-                gameOverText.text = $"CONGRATULATIONS!\n\nYou've successfully completed all 5 days!\n\nFinal Trust Fund: {playerScore} points";
-            }
-        }
     }
 
     /// <summary>
@@ -1726,6 +1835,28 @@ public class GameManager : MonoBehaviour
         
         if (endOfDayPanel != null)
             endOfDayPanel.SetActive(false);
+        
+        // If game is completed, return to main menu instead of proceeding
+        if (gameCompleted)
+        {
+            // Ensure cursor is unlocked for main menu
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            
+            // Load main menu scene with transition
+            if (SceneTransitionManager.Instance != null)
+            {
+                SceneTransitionManager.Instance.FadeTransition(2f, 1f, () => {
+                    UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+                });
+            }
+            else
+            {
+                // Fallback if no transition manager
+                UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+            }
+            return;
+        }
             
         NextDay();
     }
@@ -1760,11 +1891,10 @@ public class GameManager : MonoBehaviour
         
         currentDay = 1;
         playerScore = 0;
+        gameCompleted = false; // Reset completion flag
         
         if (endOfDayPanel != null)
             endOfDayPanel.SetActive(false);
-        if (gameOverPanel != null)
-            gameOverPanel.SetActive(false);
             
         StartDay();
     }
