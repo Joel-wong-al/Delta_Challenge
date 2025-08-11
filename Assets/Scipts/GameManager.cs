@@ -31,12 +31,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI instructionsText;
 
     [Header("Gameplay UI")]
-    [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI dayText;
     [SerializeField] private TextMeshProUGUI timeText;
     [SerializeField] private TextMeshProUGUI dayTimeText; // New field for day time display
     [SerializeField] private TextMeshProUGUI waveText;
-    [SerializeField] private TextMeshProUGUI statusText;
+    [SerializeField] private TextMeshProUGUI trustFundText; // Trust fund numerical indicator
+    [SerializeField] private TextMeshProUGUI thiefText; // Thief numerical indicator
     [SerializeField] private GameObject endOfDayPanel;
     [SerializeField] private TextMeshProUGUI summaryText;
     [SerializeField] private GameObject gameOverPanel;
@@ -46,6 +46,9 @@ public class GameManager : MonoBehaviour
     [Header("Post Processing")]
     [SerializeField] private Volume cctvVolume; // Volume with CCTV post-processing effects
     [SerializeField] private Volume firstPersonVolume; // Volume with first-person post-processing effects
+
+    [Header("Lighting")]
+    [SerializeField] private Light directionalLight; // Sun light that rotates during the day
 
     [Header("Pause Menu")]
     [SerializeField] private GameObject pauseMenuPanel;
@@ -114,6 +117,7 @@ public class GameManager : MonoBehaviour
     private GameObject currentCustomer;
     private Thief currentThief;
     private bool awaitingPlayerDecision = false;
+    private bool isSpeedBoostActive = false; // Track if 4x speed is active
 
     void Start()
     {
@@ -193,26 +197,21 @@ public class GameManager : MonoBehaviour
             }
         }
         
-        // DEBUG: Press K to instantly end day and catch all thieves (works even when game is not active, but not when paused)
+        // DEBUG: Press K to toggle 4x speed (works even when game is not active, but not when paused)
         if (!isPaused && Input.GetKeyDown(KeyCode.K))
         {
-            Debug.Log("DEBUG: K pressed - Instantly ending day and catching all thieves");
+            isSpeedBoostActive = !isSpeedBoostActive;
             
-            // Set score high enough to pass any day
-            playerScore = 1000;
-            
-            // Mark all thieves as caught
-            thievesCaughtToday = thievesSpawnedToday;
-            for (int i = 1; i <= thievesSpawnedToday; i++)
+            if (isSpeedBoostActive)
             {
-                if (!thiefsCaughtToday.Contains($"Thief #{i} (debug catch)"))
-                {
-                    thiefsCaughtToday.Add($"Thief #{i} (debug catch)");
-                }
+                Time.timeScale = 4f;
+                Debug.Log("DEBUG: K pressed - 4x speed activated");
             }
-            
-            // Force end the day
-            EndDay();
+            else
+            {
+                Time.timeScale = 1f;
+                Debug.Log("DEBUG: K pressed - Normal speed restored");
+            }
         }
         
         if (!isPaused && dayComplete && Input.GetKeyDown(KeyCode.G))
@@ -266,6 +265,7 @@ public class GameManager : MonoBehaviour
             
             UpdateTimeDisplay(); // Update UI during preparation
             UpdateDayTimeDisplay();
+            UpdateWaveDisplay(); // Update wave display to show countdown
             return; // Don't run normal game logic during preparation
         }
 
@@ -302,6 +302,9 @@ public class GameManager : MonoBehaviour
         // Update UI
         UpdateTimeDisplay();
         UpdateDayTimeDisplay();
+        UpdateTrustFundDisplay();
+        UpdateThiefDisplay();
+        UpdateSunRotation();
     }
 
     #region Day Management
@@ -331,6 +334,13 @@ public class GameManager : MonoBehaviour
         thiefsEscapedToday.Clear();
         thievesSpawnedToday = 0;
         thievesCaughtToday = 0;
+
+        // Update UI immediately with new day values
+        UpdateTrustFundDisplay();
+        UpdateThiefDisplay();
+
+        // Reset sun to starting position (night time) for the new day
+        ResetSunPosition();
 
         // Configure day-specific settings (including thief count)
         ConfigureDaySettings();
@@ -473,6 +483,10 @@ public class GameManager : MonoBehaviour
         
         dayComplete = true;
         gameActive = false;
+        
+        // Reset speed boost and time scale
+        isSpeedBoostActive = false;
+        Time.timeScale = 1f;
         
         // Stop all wave activities immediately
         isInWave = false;
@@ -866,8 +880,6 @@ public class GameManager : MonoBehaviour
         // Remove customer from tracking and destroy
         activeCustomers.Remove(customer);
         Destroy(customer);
-        
-        UpdateScoreDisplay();
     }
 
     #endregion
@@ -1034,7 +1046,6 @@ public class GameManager : MonoBehaviour
             Destroy(currentCustomer);
         }
 
-        UpdateScoreDisplay();
         HideApprehensionUI();
     }
 
@@ -1069,20 +1080,9 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void UpdateAllUI()
     {
-        UpdateScoreDisplay();
         UpdateDayDisplay();
         UpdateWaveDisplay();
-        UpdateStatusDisplay();
         UpdateDayTimeDisplay();
-    }
-
-    /// <summary>
-    /// Updates the score display UI.
-    /// </summary>
-    private void UpdateScoreDisplay()
-    {
-        if (scoreText != null)
-            scoreText.text = $"Trust Fund: {playerScore}";
     }
 
     /// <summary>
@@ -1104,29 +1104,14 @@ public class GameManager : MonoBehaviour
             if (isInPreparation)
             {
                 int remainingSeconds = Mathf.CeilToInt(preparationDuration - preparationTimer);
-                waveText.text = $"Get Ready! Starting in {remainingSeconds}s";
+                waveText.text = $"Waiting: {remainingSeconds}s";
             }
             else if (isInWave)
                 waveText.text = $"Wave {currentWave}/4";
             else if (isResting)
-                waveText.text = $"Rest Period (Timer Paused)";
+                waveText.text = "Rest";
             else
-                waveText.text = "Preparing...";
-        }
-    }
-
-    /// <summary>
-    /// Updates the status display UI.
-    /// </summary>
-    private void UpdateStatusDisplay()
-    {
-        if (statusText != null)
-        {
-            if (dayRequirements.ContainsKey(currentDay))
-            {
-                var req = dayRequirements[currentDay];
-                statusText.text = $"Trust fund to pass day: \n{req.score} pts \n\nThieves Caught: \n{thievesSpawnedToday}/{req.thieves}";
-            }
+                waveText.text = "Preparing";
         }
     }
 
@@ -1143,19 +1128,19 @@ public class GameManager : MonoBehaviour
                 float waveTimeRemaining = waveDuration - waveTimer;
                 int minutes = Mathf.FloorToInt(waveTimeRemaining / 60f);
                 int seconds = Mathf.FloorToInt(waveTimeRemaining % 60f);
-                timeText.text = $"Wave Time: {minutes:00}:{seconds:00}";
+                timeText.text = $"{minutes:00}:{seconds:00}";
             }
             else if (isResting)
             {
                 // Show rest time remaining
                 float restTimeRemaining = restDuration - restTimer;
                 int restSeconds = Mathf.FloorToInt(restTimeRemaining);
-                timeText.text = $"Rest Time: {restSeconds}s";
+                timeText.text = $"{restSeconds}s";
             }
             else
             {
                 // Show preparing message
-                timeText.text = "Preparing...";
+                timeText.text = "Preparing";
             }
         }
     }
@@ -1179,6 +1164,91 @@ public class GameManager : MonoBehaviour
             else if (displayHour > 12) { displayHour12 = displayHour - 12; period = "PM"; }
             
             dayTimeText.text = $"{displayHour12:00}:{displayMinute:00} {period}";
+        }
+    }
+
+    /// <summary>
+    /// Updates the trust fund display UI showing current/required.
+    /// </summary>
+    private void UpdateTrustFundDisplay()
+    {
+        if (trustFundText != null)
+        {
+            if (dayRequirements.ContainsKey(currentDay))
+            {
+                var requirements = dayRequirements[currentDay];
+                trustFundText.text = $"{playerScore}/{requirements.score}";
+            }
+            else
+            {
+                // Fallback for days without requirements
+                trustFundText.text = $"{playerScore}/0";
+            }
+        }
+    }
+
+    /// <summary>
+    /// Updates the thief display UI showing caught/required.
+    /// </summary>
+    private void UpdateThiefDisplay()
+    {
+        if (thiefText != null)
+        {
+            if (dayRequirements.ContainsKey(currentDay))
+            {
+                var requirements = dayRequirements[currentDay];
+                thiefText.text = $"{thievesCaughtToday}/{requirements.thieves}";
+            }
+            else
+            {
+                // Fallback for days without requirements
+                thiefText.text = $"{thievesCaughtToday}/0";
+            }
+        }
+    }
+
+    /// <summary>
+    /// Resets the directional light to its starting position (night time) at the beginning of each day.
+    /// </summary>
+    private void ResetSunPosition()
+    {
+        if (directionalLight != null)
+        {
+            // Set to night time position (-90 degrees, pointing down)
+            directionalLight.transform.rotation = Quaternion.Euler(-90f, 30f, 0f);
+            
+            // Set to night time intensity
+            directionalLight.intensity = 0.2f;
+            
+            Debug.Log("Sun position reset to night time for new day");
+        }
+    }
+
+    /// <summary>
+    /// Updates the directional light rotation to simulate day progression from night to morning.
+    /// </summary>
+    private void UpdateSunRotation()
+    {
+        if (directionalLight != null)
+        {
+            // Calculate progress through the day (0 = start of day, 1 = end of day)
+            float dayProgress = dayTimer / dayDuration;
+            
+            // Rotate from night to morning (roughly -90 degrees to +30 degrees on X-axis)
+            // Night starts at -90° (pointing down/dark), morning ends at +30° (sun is up)
+            float startAngle = -90f; // Night - sun below horizon
+            float endAngle = 30f;    // Morning - sun is up
+            float currentAngle = Mathf.Lerp(startAngle, endAngle, dayProgress);
+            
+            // Apply rotation to the directional light
+            directionalLight.transform.rotation = Quaternion.Euler(currentAngle, 30f, 0f);
+            
+            // Optional: Adjust light intensity based on sun position
+            // Darker at night, brighter as sun rises
+            float minIntensity = 0.2f; // Night intensity
+            float maxIntensity = 1.0f; // Day intensity
+            float intensityProgress = Mathf.Clamp01((currentAngle + 90f) / 120f); // Normalize angle to 0-1
+            directionalLight.intensity = Mathf.Lerp(minIntensity, maxIntensity, intensityProgress);
         }
     }
 
@@ -1345,7 +1415,9 @@ public class GameManager : MonoBehaviour
     private void ResumeGame()
     {
         isPaused = false;
-        Time.timeScale = 1f; // Resume normal time
+        
+        // Restore time scale based on speed boost state
+        Time.timeScale = isSpeedBoostActive ? 10f : 1f;
         
         // Restore previous cursor state
         Cursor.lockState = previousCursorLockState;
