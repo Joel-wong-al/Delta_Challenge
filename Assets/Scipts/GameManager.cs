@@ -41,6 +41,20 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI summaryText;
     [SerializeField] private GameObject crosshairUI; // Crosshair to hide/show during camera switching
 
+    [Header("UI Background Elements")]
+    [SerializeField] private GameObject dayWaveUIBackground; // Background panel for day and wave text
+    [SerializeField] private GameObject timeUIBackground; // Background panel for time text
+    [SerializeField] private GameObject dayTimeUIBackground; // Background panel for day time text
+    [SerializeField] private GameObject trustFundThiefUIBackground; // Background panel shared by trust fund and thief text
+
+    [Header("Cutscene")]
+    [SerializeField] private Camera cutsceneCamera; // Camera for escaped thieves cutscene
+    [SerializeField] private Transform prisonCellSpawnPoint; // Where escaped thieves appear in prison cell
+    [SerializeField] private TextMeshProUGUI cutsceneText; // Text UI for cutscene narration
+    [SerializeField] private GameObject cutsceneBackgroundPanel; // Background panel for cutscene text
+    [SerializeField] private float cameraMovementSpeed = 1f; // Speed of camera moving backwards
+    [SerializeField] private float cameraMovementDistance = 1.1f; // How far the camera moves back
+
     [Header("Post Processing")]
     [SerializeField] private Volume cctvVolume; // Volume with CCTV post-processing effects
     [SerializeField] private Volume firstPersonVolume; // Volume with first-person post-processing effects
@@ -117,7 +131,10 @@ public class GameManager : MonoBehaviour
     private GameObject currentCustomer;
     private Thief currentThief;
     private bool awaitingPlayerDecision = false;
-    private bool isSpeedBoostActive = false; // Track if 4x speed is active
+    private bool isSpeedBoostActive = false; // Track if 10x speed is active
+
+    // Final break period after last wave
+    private bool isFinalBreak = false;
 
     void Start()
     {
@@ -195,15 +212,15 @@ public class GameManager : MonoBehaviour
             }
         }
         
-        // DEBUG: Press K to toggle 4x speed (works even when game is not active, but not when paused)
+    // DEBUG: Press K to toggle 10x speed (works even when game is not active, but not when paused)
         if (!isPaused && Input.GetKeyDown(KeyCode.K))
         {
             isSpeedBoostActive = !isSpeedBoostActive;
             
             if (isSpeedBoostActive)
             {
-                Time.timeScale = 4f;
-                Debug.Log("DEBUG: K pressed - 4x speed activated");
+                Time.timeScale = 10f;
+                Debug.Log("DEBUG: K pressed - 10x speed activated");
             }
             else
             {
@@ -312,7 +329,8 @@ public class GameManager : MonoBehaviour
         }
 
         // Update day timer during active gameplay (not during preparation)
-        if (!isInPreparation && gameActive)
+        // Only increment in-game timer during waves (not during breaks)
+        if (!isInPreparation && gameActive && isInWave)
         {
             dayTimer += Time.deltaTime;
         }
@@ -325,12 +343,6 @@ public class GameManager : MonoBehaviour
         else if (isResting)
         {
             HandleRestUpdate();
-        }
-
-        // Check if day is complete
-        if (dayTimer >= dayDuration && !dayComplete && gameActive)
-        {
-            EndDay();
         }
 
         // Update UI
@@ -359,6 +371,7 @@ public class GameManager : MonoBehaviour
         isResting = false;
         dayComplete = false;
         gameActive = true;
+        isFinalBreak = false;
 
         // Reset score to 0 at the beginning of each day
         playerScore = 0;
@@ -529,21 +542,234 @@ public class GameManager : MonoBehaviour
         // Reset speed boost and time scale
         isSpeedBoostActive = false;
         Time.timeScale = 1f;
-        
+
         // Stop all wave activities immediately
         isInWave = false;
         isResting = false;
+
+        // Ensure all customers leave the store at end of day
+        if (activeCustomers != null && activeCustomers.Count > 0)
+        {
+            StartCoroutine(MakeCustomersLeave());
+        }
+
+        // If any thieves escaped, play the cutscene before showing end-of-day panel
+        if (thiefsEscapedToday != null && thiefsEscapedToday.Count > 0)
+        {
+            Debug.Log($"Starting cutscene for {thiefsEscapedToday.Count} escaped thieves");
+            StartCoroutine(PlayEscapedThievesCutsceneCoroutine());
+        }
+        else
+        {
+            Debug.Log("No escaped thieves, showing summary panel directly");
+            ShowSummaryPanelAfterCutscene();
+        }
+    }
+
+    // Plays a cutscene for escaped thieves, then shows the summary panel
+    private IEnumerator PlayEscapedThievesCutsceneCoroutine()
+    {
+        Debug.Log("Starting escaped thieves prison cell cutscene");
         
-        // Stop all coroutines to prevent background activities
-        StopAllCoroutines();
+        // Switch to cutscene camera if available
+        Camera originalCamera = null;
+        Vector3 originalCameraPosition = Vector3.zero;
         
-        // Clear any remaining customers
+        if (cutsceneCamera != null)
+        {
+            // Store original camera state
+            originalCamera = Camera.main;
+            if (originalCamera != null)
+                originalCamera.gameObject.SetActive(false);
+            
+            // Enable cutscene camera and store its starting position
+            cutsceneCamera.gameObject.SetActive(true);
+            originalCameraPosition = cutsceneCamera.transform.position;
+            
+            // Hide crosshair during cutscene
+            if (crosshairUI != null)
+                crosshairUI.SetActive(false);
+        }
+        
+        // Show cutscene background panel
+        if (cutsceneBackgroundPanel != null)
+            cutsceneBackgroundPanel.SetActive(true);
+        
+        // Hide non-gameplay UI elements during cutscene (keep Game UI visible)
+        // Hide crosshair during cutscene
+        if (crosshairUI != null)
+            crosshairUI.SetActive(false);
+            
+        // Hide apprehension popup if visible
+        if (apprehensionPopup != null)
+            apprehensionPopup.SetActive(false);
+            
+        // Hide pause menu if visible
+        if (pauseMenuPanel != null)
+            pauseMenuPanel.SetActive(false);
+            
+        // Hide UI background panels during cutscene
+        if (dayWaveUIBackground != null)
+            dayWaveUIBackground.SetActive(false);
+        if (timeUIBackground != null)
+            timeUIBackground.SetActive(false);
+        if (dayTimeUIBackground != null)
+            dayTimeUIBackground.SetActive(false);
+        if (trustFundThiefUIBackground != null)
+            trustFundThiefUIBackground.SetActive(false);
+        
+        // Spawn escaped thief models in prison cell
+        List<GameObject> prisonThieves = new List<GameObject>();
+        if (prisonCellSpawnPoint != null && customerPrefabs != null && customerPrefabs.Length > 0)
+        {
+            Debug.Log($"Spawning {thiefsEscapedToday.Count} thieves in prison cell");
+            
+            for (int i = 0; i < thiefsEscapedToday.Count; i++)
+            {
+                // Pick a random customer prefab for the escaped thief
+                GameObject thiefPrefab = customerPrefabs[Random.Range(0, customerPrefabs.Length)];
+                
+                // Position thieves in a semi-circle or grid pattern inside the prison cell
+                Vector3 spawnPos;
+                
+                if (thiefsEscapedToday.Count == 1)
+                {
+                    // Single thief at center
+                    spawnPos = prisonCellSpawnPoint.position;
+                }
+                else if (thiefsEscapedToday.Count <= 3)
+                {
+                    // Line them up horizontally with spacing
+                    float spacing = 1.5f;
+                    float offset = (thiefsEscapedToday.Count - 1) * spacing * 0.5f;
+                    spawnPos = prisonCellSpawnPoint.position + new Vector3(i * spacing - offset, 0, 0);
+                }
+                else
+                {
+                    // Arrange in a 2-row grid for more thieves
+                    int row = i / 2; // 2 thieves per row
+                    int col = i % 2;
+                    float xSpacing = 1.5f;
+                    float zSpacing = 1.2f;
+                    float xOffset = xSpacing * 0.5f; // Center the row of 2
+                    spawnPos = prisonCellSpawnPoint.position + new Vector3(col * xSpacing - xOffset, 0, row * zSpacing);
+                }
+                
+                GameObject prisonThief = Instantiate(thiefPrefab, spawnPos, Quaternion.identity);
+                
+                Debug.Log($"Spawned prison thief {i + 1} at position {spawnPos}");
+                
+                // Make thief face the camera
+                if (cutsceneCamera != null)
+                {
+                    Vector3 lookDirection = cutsceneCamera.transform.position - prisonThief.transform.position;
+                    lookDirection.y = 0; // Keep on same Y level
+                    if (lookDirection != Vector3.zero)
+                        prisonThief.transform.rotation = Quaternion.LookRotation(lookDirection);
+                }
+                
+                // Disable the thief AI script to prevent movement
+                Thief thiefScript = prisonThief.GetComponent<Thief>();
+                if (thiefScript != null)
+                    thiefScript.enabled = false;
+                
+                // Disable NavMeshAgent if present to prevent movement
+                UnityEngine.AI.NavMeshAgent navAgent = prisonThief.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                if (navAgent != null)
+                    navAgent.enabled = false;
+                
+                prisonThieves.Add(prisonThief);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Prison cell spawn point or customer prefabs not assigned!");
+        }
+        
+        // Show the cutscene text
+        if (cutsceneText != null)
+        {
+            cutsceneText.text = "These thieves weren't apprehended but were eventually caught by the police";
+            cutsceneText.gameObject.SetActive(true);
+        }
+        
+        // Start camera movement backwards (slower and shorter)
+        float movementDuration = 6f; // 6 seconds for slower movement
+        float elapsedTime = 0f;
+        
+        while (elapsedTime < movementDuration && cutsceneCamera != null)
+        {
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / movementDuration;
+            
+            // Smooth easing for more cinematic movement
+            float easedProgress = Mathf.SmoothStep(0f, 1f, progress);
+            
+            // Move camera backwards smoothly (shorter distance now)
+            Vector3 targetPosition = originalCameraPosition + cutsceneCamera.transform.forward * -cameraMovementDistance;
+            cutsceneCamera.transform.position = Vector3.Lerp(originalCameraPosition, targetPosition, easedProgress);
+            
+            yield return null;
+        }
+        
+        // Hold the final position for a moment
+        yield return new WaitForSeconds(1f);
+        
+        // Clean up prison thieves
+        foreach (GameObject thief in prisonThieves)
+        {
+            if (thief != null)
+                Destroy(thief);
+        }
+        
+        // Hide cutscene UI
+        if (cutsceneText != null)
+            cutsceneText.gameObject.SetActive(false);
+        if (cutsceneBackgroundPanel != null)
+            cutsceneBackgroundPanel.SetActive(false);
+        
+        // Restore non-gameplay UI elements after cutscene (Game UI stays visible)
+        // Restore crosshair
+        if (crosshairUI != null)
+            crosshairUI.SetActive(true);
+            
+        // Restore UI background panels after cutscene
+        if (dayWaveUIBackground != null)
+            dayWaveUIBackground.SetActive(true);
+        if (timeUIBackground != null)
+            timeUIBackground.SetActive(true);
+        if (dayTimeUIBackground != null)
+            dayTimeUIBackground.SetActive(true);
+        if (trustFundThiefUIBackground != null)
+            trustFundThiefUIBackground.SetActive(true);
+        
+        // Switch back to original camera
+        if (cutsceneCamera != null)
+        {
+            cutsceneCamera.gameObject.SetActive(false);
+            
+            // Restore original camera position
+            cutsceneCamera.transform.position = originalCameraPosition;
+            
+            if (originalCamera != null)
+                originalCamera.gameObject.SetActive(true);
+            
+            // Restore crosshair
+            if (crosshairUI != null)
+                crosshairUI.SetActive(true);
+        }
+        
+        Debug.Log("Prison cell cutscene complete, showing summary panel");
+        
+        // Show the summary panel after cutscene
+        ShowSummaryPanelAfterCutscene();
+    }
+
+    // Shows the summary panel after the cutscene (or immediately if no cutscene)
+    private void ShowSummaryPanelAfterCutscene()
+    {
         ClearAllCustomers();
-        
-        // Check if day requirements are met
         bool dayPassed = CheckDayRequirements();
-        
-        // Check if this is the final day (Day 5)
         if (currentDay >= 5)
         {
             if (dayPassed)
@@ -553,7 +779,6 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                // Do NOT set gameCompleted, treat as normal failed day
                 ShowEndOfDayPanelForCompletion(false);
             }
         }
@@ -664,8 +889,19 @@ public class GameManager : MonoBehaviour
     private void HandleRestUpdate()
     {
         restTimer += Time.deltaTime;
-        
-        if (restTimer >= restDuration)
+
+        if (isFinalBreak)
+        {
+            // During final break, just wait for rest duration then end the day directly
+            if (restTimer >= restDuration)
+            {
+                isResting = false;
+                isFinalBreak = false;
+                // Directly end the day after final break completes
+                EndDay();
+            }
+        }
+        else if (restTimer >= restDuration)
         {
             StartNextWave();
         }
@@ -800,9 +1036,14 @@ public class GameManager : MonoBehaviour
         // Make all customers leave the store
         StartCoroutine(MakeCustomersLeave());
         
-        if (currentWave > 4 || dayTimer >= dayDuration - restDuration)
+        if (currentWave >= 4)
         {
-            // Last wave of the day or no time for another wave
+            // Last wave of the day - start final break
+            Debug.Log("Starting final break after wave 4");
+            isFinalBreak = true;
+            isResting = true;
+            restTimer = 0f;
+            UpdateAllUI();
             return;
         }
         
@@ -1222,6 +1463,8 @@ public class GameManager : MonoBehaviour
                 int remainingSeconds = Mathf.CeilToInt(preparationDuration - preparationTimer);
                 waveText.text = $"Waiting: {remainingSeconds}s";
             }
+            else if (dayComplete)
+                waveText.text = "Day Complete";
             else if (isInWave)
                 waveText.text = $"Wave {currentWave}/4";
             else if (isResting)
@@ -1273,13 +1516,17 @@ public class GameManager : MonoBehaviour
             float gameHour = 0f + (gameTimeProgress * 9f); // 12am = 0, 9am = 9
             int displayHour = Mathf.FloorToInt(gameHour);
             int displayMinute = Mathf.FloorToInt((gameHour - displayHour) * 60f);
-            
             string period = "AM";
             int displayHour12 = displayHour;
             if (displayHour == 0) displayHour12 = 12; // 0 = 12 AM
             else if (displayHour > 12) { displayHour12 = displayHour - 12; period = "PM"; }
-            
             dayTimeText.text = $"{displayHour12:00}:{displayMinute:00} {period}";
+
+            // End the day at 9:01am or later
+            if (!dayComplete && gameActive && displayHour == 9 && displayMinute >= 1)
+            {
+                EndDay();
+            }
         }
     }
 
@@ -1608,7 +1855,7 @@ public class GameManager : MonoBehaviour
         isPaused = false;
         
         // Restore time scale based on speed boost state
-        Time.timeScale = isSpeedBoostActive ? 10f : 1f;
+    Time.timeScale = isSpeedBoostActive ? 10f : 1f;
         
         // Restore previous cursor state
         Cursor.lockState = previousCursorLockState;

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1270640553819734267}
   - component: {fileID: 7913625013294697324}
   - component: {fileID: 8932626145747333626}
-  - component: {fileID: 8307753845138960373}
+  - component: {fileID: 265027839272203000}
   m_Layer: 0
   m_Name: prison_floor
   m_TagString: Untagged
@@ -87,8 +87,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &8307753845138960373
-MeshCollider:
+--- !u!65 &265027839272203000
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -105,7 +105,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -7513297493162946847, guid: 1989795def8b61447b9b993b939d4ab9, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 3.3956554, y: 0.057841234, z: 3.395655}
+  m_Center: {x: -1.6978267, y: -0.028920617, z: -1.6978275}

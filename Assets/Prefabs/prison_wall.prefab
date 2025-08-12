@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2393156010207238823}
   - component: {fileID: 7887984372621319588}
   - component: {fileID: 855173677451306835}
-  - component: {fileID: 1290062309537089392}
+  - component: {fileID: 7618583521311861941}
   m_Layer: 0
   m_Name: prison_wall
   m_TagString: Untagged
@@ -87,8 +87,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &1290062309537089392
-MeshCollider:
+--- !u!65 &7618583521311861941
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -105,7 +105,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -6281424698479989189, guid: c04d548686fea0c48b0f10f438440c68, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 3.3956554, y: 3.3956547, z: 0.05784118}
+  m_Center: {x: 1.6978275, y: 1.6978271, z: 0.028920598}
