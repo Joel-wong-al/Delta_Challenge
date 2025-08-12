@@ -546,8 +546,16 @@ public class GameManager : MonoBehaviour
         // Check if this is the final day (Day 5)
         if (currentDay >= 5)
         {
-            gameCompleted = true;
-            ShowEndOfDayPanelForCompletion(dayPassed);
+            if (dayPassed)
+            {
+                gameCompleted = true;
+                ShowEndOfDayPanelForCompletion(true);
+            }
+            else
+            {
+                // Do NOT set gameCompleted, treat as normal failed day
+                ShowEndOfDayPanelForCompletion(false);
+            }
         }
         else if (dayPassed)
         {
@@ -1407,36 +1415,9 @@ public class GameManager : MonoBehaviour
         if (endOfDayPanel != null)
         {
             endOfDayPanel.SetActive(true);
-            
             if (summaryText != null)
             {
-                // Show normal day summary first
-                var req = dayRequirements.ContainsKey(currentDay) ? dayRequirements[currentDay] : new DayRequirement(0, 0);
-                
-                string summary = $"=== DAY {currentDay} SUMMARY ===\n\n";
-                summary += $"Trust Fund Balance: {playerScore} points\n";
-                summary += $"Required Trust Fund: {req.score} points\n\n";
-                
-                summary += $"Thieves Spawned: {thievesSpawnedToday}/{req.thieves}\n";
-                summary += $"Thieves Caught: {thievesCaughtToday}\n";
-                summary += $"Thieves Escaped: {thiefsEscapedToday.Count}\n\n";
-                
-                // Show day result
-                if (dayPassed)
-                {
-                    summary += $"=== <color=green>DAY PASSED!</color> ===\n\n";
-                }
-                else
-                {
-                    summary += $"=== <color=red>DAY FAILED!</color> ===\n\n";
-                }
-                
-                // Add game completion message
-                summary += $"=== GAME COMPLETED! ===\n\n";
-                summary += $"CONGRATULATIONS!\n";
-                summary += $"You've successfully completed all 5 days!\n\n";
-                summary += $"Press G to return to Main Menu";
-                
+                string summary = GenerateDaySummary(dayPassed);
                 summaryText.text = summary;
                 Debug.Log("Game completion summary displayed");
             }
@@ -1479,7 +1460,7 @@ public class GameManager : MonoBehaviour
         }
         else if (currentDay >= 5)
         {
-            summary += "CONGRATULATIONS! You've completed all 5 days!\n\nPress G to restart game.";
+            summary += "CONGRATULATIONS! You've completed all 5 days!\n\nPress G to return to Main Menu.";
         }
         else
         {
