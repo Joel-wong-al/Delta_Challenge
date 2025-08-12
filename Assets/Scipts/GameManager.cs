@@ -55,6 +55,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float cameraMovementSpeed = 1f; // Speed of camera moving backwards
     [SerializeField] private float cameraMovementDistance = 1.1f; // How far the camera moves back
 
+    [Header("Cashier NPC")]
+    [SerializeField] private CashierBehaviour cashierBehaviour; // Reference to the cashier NPC script
+
     [Header("Post Processing")]
     [SerializeField] private Volume cctvVolume; // Volume with CCTV post-processing effects
     [SerializeField] private Volume firstPersonVolume; // Volume with first-person post-processing effects
@@ -1332,78 +1335,107 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void OnApprehendCustomer()
     {
+        if (currentCustomer != null && currentThief != null && cashierBehaviour != null)
+        {
+            // Always queue the apprehension with the cashier, even if busy
+            cashierBehaviour.MoveToApprehendCustomer(currentCustomer, currentThief);
+        }
+        HideApprehensionUI();
+    }
+    
+    /// <summary>
+    /// Fallback method to process apprehension without cashier movement
+    /// </summary>
+    private void ProcessApprehensionDirectly()
+    {
         if (currentCustomer != null && currentThief != null)
         {
             bool isCorrectDecision = currentThief.IsConfirmedThief();
             bool isActualThief = currentThief.IsThief;
             int warningCount = currentThief.GetCurrentWarningCount();
             
-            if (isCorrectDecision)
-            {
-                // Success - correctly apprehended a confirmed thief (3+ warnings)
-                playerScore += 100;
-                thievesCaughtToday++;
-                thiefsCaughtToday.Add($"Thief #{thievesSpawnedToday} (confirmed, 3 warnings)");
-                Debug.Log($"CORRECT! Apprehended confirmed thief. +100 points. Trust Fund: {playerScore}");
-                ShowFeedback("CORRECT! Thief Apprehended! +100 points", Color.green);
-                
-                // Update UI immediately to reflect the new thief count
-                UpdateAllUI();
-            }
-            else if (isActualThief && warningCount >= 1 && warningCount < 3)
-            {
-                // Apprehended actual thief but with insufficient warnings
-                playerScore -= 50;
-                thievesCaughtToday++;
-                thiefsCaughtToday.Add($"Thief #{thievesSpawnedToday} (early arrest, {warningCount} warnings)");
-                Debug.Log($"PARTIAL! Apprehended thief early ({warningCount} warnings). -50 points. Trust Fund: {playerScore}");
-                ShowFeedback($"EARLY ARREST! Only {warningCount} warnings! -50 points", Color.yellow);
-                
-                // Update UI immediately to reflect the new thief count
-                UpdateAllUI();
-            }
-            else if (!isActualThief && warningCount >= 1 && warningCount < 3)
-            {
-                // Apprehended innocent with some warnings  
-                playerScore -= 50;
-                Debug.Log($"WRONG! Apprehended innocent with {warningCount} warnings. -50 points. Trust Fund: {playerScore}");
-                ShowFeedback($"WRONG! Innocent with {warningCount} warnings! -50 points", Color.yellow);
-                
-                // Update UI immediately to reflect the new score
-                UpdateAllUI();
-            }
-            else
-            {
-                // Completely innocent customer (0 warnings)
-                playerScore -= 100;
-                Debug.Log($"WRONG! Apprehended innocent customer. -100 points. Trust Fund: {playerScore}");
-                ShowFeedback("WRONG! Innocent Customer! -100 points", Color.red);
-                
-                // Update UI immediately to reflect the new score
-                UpdateAllUI();
-            }
-            
-            // Remove customer from store and tracking
-            activeCustomers.Remove(currentCustomer);
-            
-            // Safely destroy customer by disabling NavMeshAgent first
-            UnityEngine.AI.NavMeshAgent navAgent = currentCustomer.GetComponent<UnityEngine.AI.NavMeshAgent>();
-            if (navAgent != null)
-            {
-                navAgent.enabled = false;
-            }
-            
-            // Stop any running coroutines on the Thief component
-            Thief thiefComponent = currentCustomer.GetComponent<Thief>();
-            if (thiefComponent != null)
-            {
-                thiefComponent.StopAllCoroutines();
-            }
-            
-            Destroy(currentCustomer);
+            ProcessApprehension(currentCustomer, currentThief, isCorrectDecision, isActualThief, warningCount, thievesSpawnedToday);
         }
-
-        HideApprehensionUI();
+    }
+    
+    /// <summary>
+    /// Public method called by CashierBehaviour to process apprehension
+    /// </summary>
+    public void ProcessApprehension(GameObject customer, Thief thief, bool isCorrectDecision, bool isActualThief, int warningCount, int thievesSpawnedNumber)
+    {
+        if (customer == null || thief == null) return;
+        
+        if (isCorrectDecision)
+        {
+            // Success - correctly apprehended a confirmed thief (3+ warnings)
+            playerScore += 100;
+            thievesCaughtToday++;
+            thiefsCaughtToday.Add($"Thief #{thievesSpawnedNumber} (confirmed, 3 warnings)");
+            Debug.Log($"CORRECT! Apprehended confirmed thief. +100 points. Trust Fund: {playerScore}");
+            ShowFeedback("CORRECT! Thief Apprehended! +100 points", Color.green);
+            
+            // Update UI immediately to reflect the new thief count
+            UpdateAllUI();
+        }
+        else if (isActualThief && warningCount >= 1 && warningCount < 3)
+        {
+            // Apprehended actual thief but with insufficient warnings
+            playerScore -= 50;
+            thievesCaughtToday++;
+            thiefsCaughtToday.Add($"Thief #{thievesSpawnedNumber} (early arrest, {warningCount} warnings)");
+            Debug.Log($"PARTIAL! Apprehended thief early ({warningCount} warnings). -50 points. Trust Fund: {playerScore}");
+            ShowFeedback($"EARLY ARREST! Only {warningCount} warnings! -50 points", Color.yellow);
+            
+            // Update UI immediately to reflect the new thief count
+            UpdateAllUI();
+        }
+        else if (!isActualThief && warningCount >= 1 && warningCount < 3)
+        {
+            // Apprehended innocent with some warnings  
+            playerScore -= 50;
+            Debug.Log($"WRONG! Apprehended innocent with {warningCount} warnings. -50 points. Trust Fund: {playerScore}");
+            ShowFeedback($"WRONG! Innocent with {warningCount} warnings! -50 points", Color.yellow);
+            
+            // Update UI immediately to reflect the new score
+            UpdateAllUI();
+        }
+        else
+        {
+            // Completely innocent customer (0 warnings)
+            playerScore -= 100;
+            Debug.Log($"WRONG! Apprehended innocent customer. -100 points. Trust Fund: {playerScore}");
+            ShowFeedback("WRONG! Innocent Customer! -100 points", Color.red);
+            
+            // Update UI immediately to reflect the new score
+            UpdateAllUI();
+        }
+        
+        // Remove customer from store and tracking
+        activeCustomers.Remove(customer);
+        
+        // Safely destroy customer by disabling NavMeshAgent first
+        UnityEngine.AI.NavMeshAgent navAgent = customer.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (navAgent != null)
+        {
+            navAgent.enabled = false;
+        }
+        
+        // Stop any running coroutines on the Thief component
+        Thief thiefComponent = customer.GetComponent<Thief>();
+        if (thiefComponent != null)
+        {
+            thiefComponent.StopAllCoroutines();
+        }
+        
+        Destroy(customer);
+    }
+    
+    /// <summary>
+    /// Get the current number of thieves spawned today (for CashierBehaviour)
+    /// </summary>
+    public int GetThievesSpawnedToday()
+    {
+        return thievesSpawnedToday;
     }
 
     /// <summary>

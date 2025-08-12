@@ -3056,8 +3056,6 @@ Transform:
   - {fileID: 54489194}
   - {fileID: 1719720850}
   - {fileID: 1524093652}
-  - {fileID: 627131336}
-  - {fileID: 362042852}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &81089399
@@ -18377,12 +18375,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 362042851}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.8550606, y: -1.5097353, z: 0.89300156}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -16.140148, y: 0.2383742, z: -44.52}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 80780444}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &363397964
 PrefabInstance:
@@ -26359,11 +26357,11 @@ Transform:
   m_GameObject: {fileID: 627131332}
   serializedVersion: 2
   m_LocalRotation: {x: -0.02195151, y: -0.69716555, z: 0.021326846, w: -0.7162566}
-  m_LocalPosition: {x: -0.98119354, y: 0.3088491, z: 1.446167}
+  m_LocalPosition: {x: -18.976402, y: 2.0569587, z: -43.966835}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 80780444}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &628576066
 PrefabInstance:
@@ -62173,10 +62171,6 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 1674546952}
-    - target: {fileID: -2840140460936837893, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
-      propertyPath: moveSpeed
-      value: 5
-      objectReference: {fileID: 0}
     - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.773
@@ -62219,7 +62213,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4042540969063581805, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
       propertyPath: m_Speed
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 6293381563903558607, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
       propertyPath: m_Name
@@ -81077,9 +81071,11 @@ SceneRoots:
   - {fileID: 80780444}
   - {fileID: 1267689747}
   - {fileID: 72742696}
-  - {fileID: 1674546951}
   - {fileID: 283217290}
   - {fileID: 2066135791}
   - {fileID: 1535410341}
   - {fileID: 1182398586}
   - {fileID: 409144113}
+  - {fileID: 627131336}
+  - {fileID: 362042852}
+  - {fileID: 1674546951}
