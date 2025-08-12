@@ -534,7 +534,7 @@ GameObject:
   - component: {fileID: 18724511}
   - component: {fileID: 18724510}
   m_Layer: 5
-  m_Name: TutorialImage
+  m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -549,7 +549,7 @@ RectTransform:
   m_GameObject: {fileID: 18724508}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 12.352766, y: 8.681402, z: 8.681402}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 283650408}
@@ -579,7 +579,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 2bec125b4b02ea149806a1b1acf49d66, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -56946,14 +56946,9 @@ MonoBehaviour:
   startButton: {fileID: 75460666}
   tutorialButton: {fileID: 933625644}
   quitButton: {fileID: 1817863759}
-  tutorialPanel: {fileID: 283650407}
-  tutorialImage: {fileID: 18724510}
-  tutorialSlides:
-  - {fileID: 21300000, guid: 2bec125b4b02ea149806a1b1acf49d66, type: 3}
-  - {fileID: 21300000, guid: 9f327977122a56340b418df5d913ddec, type: 3}
-  - {fileID: 21300000, guid: 6d9bca06667175743920c385a84781c4, type: 3}
-  - {fileID: 21300000, guid: dca174ed5ecf23a4d9ae54606201c06c, type: 3}
-  - {fileID: 21300000, guid: b8bd3f41f7ce1d44ab682e779b4f95f7, type: 3}
+  tutorialPanel: {fileID: 0}
+  tutorialImage: {fileID: 0}
+  tutorialSlides: []
   slideCounterText: {fileID: 0}
   backgroundCamera: {fileID: 751377335}
   enableCameraRocking: 1
