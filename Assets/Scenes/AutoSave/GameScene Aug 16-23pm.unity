@@ -2141,6 +2141,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: bar (10)
       objectReference: {fileID: 0}
+    - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 7195162754963988013, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2341,6 +2345,10 @@ PrefabInstance:
     - target: {fileID: 4164546700392496713, guid: 1c457e74dec188f4fa2a587a54b52792, type: 3}
       propertyPath: m_Name
       value: Keyboard (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4164546700392496713, guid: 1c457e74dec188f4fa2a587a54b52792, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 6347456292704626325, guid: 1c457e74dec188f4fa2a587a54b52792, type: 3}
       propertyPath: m_LocalScale.x
@@ -3048,6 +3056,8 @@ Transform:
   - {fileID: 54489194}
   - {fileID: 1719720850}
   - {fileID: 1524093652}
+  - {fileID: 627131336}
+  - {fileID: 362042852}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &81089399
@@ -3061,6 +3071,10 @@ PrefabInstance:
     - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_Name
       value: prison_wall (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 2393156010207238823, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3328,6 +3342,10 @@ PrefabInstance:
     - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_Name
       value: bar (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 7195162754963988013, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -4581,6 +4599,10 @@ PrefabInstance:
     - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_Name
       value: prison_wall (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 2393156010207238823, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -9806,8 +9828,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -9844,7 +9866,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: -7.922119, y: 16.40575, z: -6.4817505, w: 2.1168518}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -17787,6 +17809,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: prison_wall (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 2393156010207238823, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -3.4374847
@@ -18351,12 +18377,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 362042851}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -16.140148, y: 0.2383742, z: -43.98612}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.8550606, y: -1.5097353, z: 0.89300156}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 80780444}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &363397964
 PrefabInstance:
@@ -19051,6 +19077,10 @@ PrefabInstance:
     - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_Name
       value: prison_wall (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 2393156010207238823, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -19780,9 +19810,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 80780444}
     m_Modifications:
+    - target: {fileID: 219833899791150658, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 974016699484703954, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
       propertyPath: m_Name
       value: ceiling (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 974016699484703954, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 4778379957886548639, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
       propertyPath: m_LocalPosition.x
@@ -26321,11 +26359,11 @@ Transform:
   m_GameObject: {fileID: 627131332}
   serializedVersion: 2
   m_LocalRotation: {x: -0.02195151, y: -0.69716555, z: 0.021326846, w: -0.7162566}
-  m_LocalPosition: {x: -18.976402, y: 2.0569587, z: -43.966835}
+  m_LocalPosition: {x: -0.98119354, y: 0.3088491, z: 1.446167}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 80780444}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &628576066
 PrefabInstance:
@@ -27120,6 +27158,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Poster_1
       objectReference: {fileID: 0}
+    - target: {fileID: 1055310953185014414, guid: 18a673ccb62dc79418210e8f1640d01f, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 5121389424290309087, guid: 18a673ccb62dc79418210e8f1640d01f, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.25810108
@@ -27259,6 +27301,10 @@ PrefabInstance:
     - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_Name
       value: bar (9)
+      objectReference: {fileID: 0}
+    - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 7195162754963988013, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -27484,6 +27530,10 @@ PrefabInstance:
     - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_Name
       value: prison_wall (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 2393156010207238823, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -28380,6 +28430,10 @@ PrefabInstance:
     - target: {fileID: 3806886031301368154, guid: 7e33de6e44c99f544a8fe0750dc8e8fa, type: 3}
       propertyPath: m_Name
       value: prison_floor (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3806886031301368154, guid: 7e33de6e44c99f544a8fe0750dc8e8fa, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -29330,7 +29384,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 4.877302, y: 1.4751662, z: 2.8587904}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1841617756}
   m_Father: {fileID: 748043296}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -30417,6 +30472,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: bar (8)
       objectReference: {fileID: 0}
+    - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 7195162754963988013, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -30519,7 +30578,7 @@ MonoBehaviour:
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
-  m_ScreenMatchMode: 0
+  m_ScreenMatchMode: 1
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
@@ -30566,7 +30625,6 @@ RectTransform:
   - {fileID: 1499673313}
   - {fileID: 971847314}
   - {fileID: 704588942}
-  - {fileID: 1841617756}
   - {fileID: 1309288125}
   - {fileID: 7260962}
   - {fileID: 1913816122}
@@ -31869,6 +31927,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: prison_wall (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 2393156010207238823, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.4116383
@@ -32910,6 +32972,10 @@ PrefabInstance:
     - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_Name
       value: bar (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 7195162754963988013, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -36287,6 +36353,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: bar (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 7195162754963988013, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -36393,6 +36463,10 @@ PrefabInstance:
     - target: {fileID: 3806886031301368154, guid: 7e33de6e44c99f544a8fe0750dc8e8fa, type: 3}
       propertyPath: m_Name
       value: prison_floor (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3806886031301368154, guid: 7e33de6e44c99f544a8fe0750dc8e8fa, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -37959,6 +38033,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: prison_wall (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 2393156010207238823, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.015993118
@@ -38184,6 +38262,10 @@ PrefabInstance:
     - target: {fileID: 3007735637035003565, guid: 244db182612a4ec48a9ca8874c5f0170, type: 3}
       propertyPath: m_Name
       value: Poster_2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3007735637035003565, guid: 244db182612a4ec48a9ca8874c5f0170, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -39982,6 +40064,10 @@ PrefabInstance:
     - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_Name
       value: bar (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 7195162754963988013, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -42340,6 +42426,10 @@ PrefabInstance:
     - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_Name
       value: prison_wall (9)
+      objectReference: {fileID: 0}
+    - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 2393156010207238823, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -45772,6 +45862,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: bar (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 7195162754963988013, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -48986,9 +49080,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 80780444}
     m_Modifications:
+    - target: {fileID: 219833899791150658, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 974016699484703954, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
       propertyPath: m_Name
       value: ceiling (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 974016699484703954, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 4778379957886548639, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
       propertyPath: m_LocalPosition.x
@@ -49539,7 +49641,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   customerPrefabs:
-  - {fileID: 6293381563903558607, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
   - {fileID: 252078832851276153, guid: 6650f4462f9b0324d8e697c042a2529e, type: 3}
   - {fileID: 7074219424369966399, guid: f814dc2ae278f8340abaeb3ba2b31822, type: 3}
   - {fileID: 3862172024737601250, guid: 6913a79b9e768b544b6937ad43e26a27, type: 3}
@@ -49561,6 +49662,17 @@ MonoBehaviour:
   endOfDayPanel: {fileID: 1913816121}
   summaryText: {fileID: 1333082429}
   crosshairUI: {fileID: 1309288124}
+  dayWaveUIBackground: {fileID: 971847313}
+  timeUIBackground: {fileID: 704588941}
+  dayTimeUIBackground: {fileID: 7260961}
+  trustFundThiefUIBackground: {fileID: 1499673312}
+  cutsceneCamera: {fileID: 627131335}
+  prisonCellSpawnPoint: {fileID: 362042852}
+  cutsceneText: {fileID: 265063162}
+  cutsceneBackgroundPanel: {fileID: 987841721}
+  cameraMovementSpeed: 1
+  cameraMovementDistance: 1.5
+  cashierBehaviour: {fileID: 1902886998}
   cctvVolume: {fileID: 1926608558}
   firstPersonVolume: {fileID: 600089952}
   directionalLight: {fileID: 1573025235}
@@ -52425,6 +52537,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Newspaper
       objectReference: {fileID: 0}
+    - target: {fileID: 5395412046491331946, guid: bde60e8dfc62fc54c84738fb46f56b98, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -54393,6 +54509,10 @@ PrefabInstance:
     - target: {fileID: 6371838563140507618, guid: fb7c17efc4ab6c147bec377c178e5650, type: 3}
       propertyPath: m_Name
       value: Poster_3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6371838563140507618, guid: fb7c17efc4ab6c147bec377c178e5650, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -56696,6 +56816,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: bar (11)
       objectReference: {fileID: 0}
+    - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 7195162754963988013, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -57788,9 +57912,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 80780444}
     m_Modifications:
+    - target: {fileID: 219833899791150658, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 974016699484703954, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
       propertyPath: m_Name
       value: ceiling (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 974016699484703954, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 4778379957886548639, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
       propertyPath: m_LocalPosition.x
@@ -61502,6 +61634,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: prison_floor (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 3806886031301368154, guid: 7e33de6e44c99f544a8fe0750dc8e8fa, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -62025,6 +62161,84 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0af3a2c00d3ea9b41847c72072989c12, type: 3}
+--- !u!1001 &1674546951
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -2840140460936837893, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: animator
+      value: 
+      objectReference: {fileID: 1674546952}
+    - target: {fileID: -2840140460936837893, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: moveSpeed
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.773
+      objectReference: {fileID: 0}
+    - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.31439006
+      objectReference: {fileID: 0}
+    - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.21751148
+      objectReference: {fileID: 0}
+    - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.0000029504295
+      objectReference: {fileID: 0}
+    - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4042540969063581805, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_Speed
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6293381563903558607, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_Name
+      value: cashier
+      objectReference: {fileID: 0}
+    - target: {fileID: 6293381563903558607, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+--- !u!95 &1674546952 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 8550800458602272279, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+  m_PrefabInstance: {fileID: 1674546951}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1675201103 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2546920601121577427, guid: 32ce7167e34e483408bde9aeaaac442b, type: 3}
@@ -62270,6 +62484,10 @@ PrefabInstance:
     - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_Name
       value: bar (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 7195162754963988013, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -63752,6 +63970,10 @@ PrefabInstance:
     - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_Name
       value: bar (5)
+      objectReference: {fileID: 0}
+    - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 7195162754963988013, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -67491,16 +67713,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1841617755}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.20503138, y: 0.67788976, z: 0.3497983}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 748043296}
+  m_Father: {fileID: 704588942}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 603, y: 442}
+  m_AnchoredPosition: {x: -20.503113, y: 2.7115479}
   m_SizeDelta: {x: 263.7115, y: 65.9279}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1841617757
@@ -69479,6 +69701,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 120909529766810156, guid: 5e9ab992b2f064d41b1a1827a07ad30a, type: 3}
   m_PrefabInstance: {fileID: 1900487233}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1902886998 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -2840140460936837893, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+  m_PrefabInstance: {fileID: 1674546951}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfff8e7eae7349b458a78aba349f278b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &1903964648 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 99e58c029cc84c949b4801297e90f02f, type: 3}
@@ -69884,7 +70117,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1926608558
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -71378,9 +71611,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 80780444}
     m_Modifications:
+    - target: {fileID: 219833899791150658, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 974016699484703954, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
       propertyPath: m_Name
       value: ceiling
+      objectReference: {fileID: 0}
+    - target: {fileID: 974016699484703954, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 4778379957886548639, guid: 26bdf1e015f3b2b40bc58f6610ae1744, type: 3}
       propertyPath: m_LocalPosition.x
@@ -77210,6 +77451,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: prison_wall (8)
       objectReference: {fileID: 0}
+    - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 2393156010207238823, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -3.4375038
@@ -78997,6 +79242,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Newspaper_2
       objectReference: {fileID: 0}
+    - target: {fileID: 3576238434305013906, guid: a213e60a450db934d9f744959b0a7524, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 4548649392924888246, guid: a213e60a450db934d9f744959b0a7524, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.12246384
@@ -79217,6 +79466,10 @@ PrefabInstance:
     - target: {fileID: 3122277919553206018, guid: 87fc0abca3f50f74d92c679e79e10161, type: 3}
       propertyPath: m_Name
       value: toilet
+      objectReference: {fileID: 0}
+    - target: {fileID: 3122277919553206018, guid: 87fc0abca3f50f74d92c679e79e10161, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 5662246312679597745, guid: 87fc0abca3f50f74d92c679e79e10161, type: 3}
       propertyPath: m_LocalScale.x
@@ -79557,9 +79810,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2201307597013270216, guid: e4e74695872812741b6cad7716d7c57e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 6258608327465834117, guid: e4e74695872812741b6cad7716d7c57e, type: 3}
       propertyPath: m_Name
       value: Photo_Frame
+      objectReference: {fileID: 0}
+    - target: {fileID: 6258608327465834117, guid: e4e74695872812741b6cad7716d7c57e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
+    - target: {fileID: 9011640040745552701, guid: e4e74695872812741b6cad7716d7c57e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -79738,6 +80003,14 @@ PrefabInstance:
     - target: {fileID: 1406047881948874159, guid: c5f40f919ec7b344691438ebb1e9e8e0, type: 3}
       propertyPath: m_Name
       value: Single_SodaCan
+      objectReference: {fileID: 0}
+    - target: {fileID: 1406047881948874159, guid: c5f40f919ec7b344691438ebb1e9e8e0, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
+    - target: {fileID: 6660600426944560979, guid: c5f40f919ec7b344691438ebb1e9e8e0, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 7710178579420378353, guid: c5f40f919ec7b344691438ebb1e9e8e0, type: 3}
       propertyPath: m_LocalScale.x
@@ -79918,6 +80191,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: prison_floor
       objectReference: {fileID: 0}
+    - target: {fileID: 3806886031301368154, guid: 7e33de6e44c99f544a8fe0750dc8e8fa, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -79934,6 +80211,10 @@ PrefabInstance:
     - target: {fileID: 3940939092236825017, guid: dabb4c866011f814a91224ca2c1dc6a1, type: 3}
       propertyPath: m_Name
       value: Newspaper_1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3940939092236825017, guid: dabb4c866011f814a91224ca2c1dc6a1, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 5524457059547981765, guid: dabb4c866011f814a91224ca2c1dc6a1, type: 3}
       propertyPath: m_LocalScale.x
@@ -80301,6 +80582,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: prison_wall
       objectReference: {fileID: 0}
+    - target: {fileID: 768988435354843959, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 2393156010207238823, guid: d5bf1ffa83ca7894a8a0bbddc424f28e, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.04184723
@@ -80398,6 +80683,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: bench
       objectReference: {fileID: 0}
+    - target: {fileID: 4041408500010229940, guid: 2c721053bb7c8f34bac669c11feef658, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -80493,6 +80782,10 @@ PrefabInstance:
     - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_Name
       value: bar
+      objectReference: {fileID: 0}
+    - target: {fileID: 31773473345820320, guid: e0546fd855c2210478a72ea23084722e, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 7195162754963988013, guid: e0546fd855c2210478a72ea23084722e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -80616,6 +80909,10 @@ PrefabInstance:
     - target: {fileID: 4164546700392496713, guid: 1c457e74dec188f4fa2a587a54b52792, type: 3}
       propertyPath: m_Name
       value: Keyboard
+      objectReference: {fileID: 0}
+    - target: {fileID: 4164546700392496713, guid: 1c457e74dec188f4fa2a587a54b52792, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 6347456292704626325, guid: 1c457e74dec188f4fa2a587a54b52792, type: 3}
       propertyPath: m_LocalScale.x
@@ -80748,6 +81045,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Table
       objectReference: {fileID: 0}
+    - target: {fileID: 4281200550860533308, guid: 9518a48027e45c048ab213c560f67826, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -80776,10 +81077,9 @@ SceneRoots:
   - {fileID: 80780444}
   - {fileID: 1267689747}
   - {fileID: 72742696}
+  - {fileID: 1674546951}
   - {fileID: 283217290}
   - {fileID: 2066135791}
   - {fileID: 1535410341}
   - {fileID: 1182398586}
   - {fileID: 409144113}
-  - {fileID: 627131336}
-  - {fileID: 362042852}

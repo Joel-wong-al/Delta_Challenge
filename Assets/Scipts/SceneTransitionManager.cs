@@ -1,32 +1,50 @@
+﻿/******************************************************************************
+ * File: SceneTransitionManager.cs
+ * Author: Javier, Zenon, Joel
+ * Created: [Insert Date]
+ * Description: Handles scene transitions with fade effects and optional audio fading
+ *              for the Delta Challenge game. Provides singleton access and smooth
+ *              transitions between scenes and gameplay states.
+ ******************************************************************************/
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
 /// <summary>
-/// Handles smooth fade transitions between scenes and within gameplay.
-/// This is a singleton that persists across scenes.
+/// Handles scene transitions with fade effects and optional audio fading for the Delta Challenge game.
+/// Provides singleton access and smooth transitions between scenes and gameplay states.
 /// </summary>
 public class SceneTransitionManager : MonoBehaviour
 {
+    /// <summary>
+    /// Singleton instance for global access.
+    /// </summary>
     public static SceneTransitionManager Instance { get; private set; }
-    
+
+    // ===================== Fade Settings =====================
     [Header("Fade Settings")]
-    [SerializeField] private Image fadeImage;
-    [SerializeField] private Canvas fadeCanvas;
-    [SerializeField] private float defaultFadeDuration = 1f;
-    [SerializeField] private Color fadeColor = Color.black;
-    [SerializeField] private AnimationCurve fadeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-    
+    [SerializeField] private Image fadeImage; ///< UI Image used for fade overlay.
+    [SerializeField] private Canvas fadeCanvas; ///< Canvas containing the fade image.
+    [SerializeField] private float defaultFadeDuration = 1f; ///< Default duration for fade transitions.
+    [SerializeField] private Color fadeColor = Color.black; ///< Color used for fade overlay.
+    [SerializeField] private AnimationCurve fadeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f); ///< Curve for fade animation.
+
+    // ===================== Audio Settings =====================
     [Header("Audio Settings")]
-    [SerializeField] private bool fadeAudioDuringTransition = true;
-    [SerializeField] private float audioFadeDuration = 0.5f;
+    [SerializeField] private bool fadeAudioDuringTransition = true; ///< If true, fades audio during transitions.
+    [SerializeField] private float audioFadeDuration = 0.5f; ///< Duration for audio fade in/out.
+
+    private bool isTransitioning = false; ///< True if a scene or fade transition is in progress.
+    private Coroutine currentTransition; ///< Reference to the currently running transition coroutine.
+    private AudioSource[] allAudioSources; ///< All audio sources in the scene for fading.
+    private float[] originalAudioVolumes; ///< Original volumes of audio sources for restoration.
+
     
-    private bool isTransitioning = false;
-    private Coroutine currentTransition;
-    private AudioSource[] allAudioSources;
-    private float[] originalAudioVolumes;
-    
+
+    /// <summary>
+    /// Unity Awake method. Sets up singleton instance and initializes fade UI.
+    /// </summary>
     void Awake()
     {
         // Singleton pattern - ensure only one instance exists
@@ -43,6 +61,10 @@ public class SceneTransitionManager : MonoBehaviour
         }
     }
     
+
+    /// <summary>
+    /// Unity Start method. Ensures fade UI is ready and not blocking input.
+    /// </summary>
     void Start()
     {
         // Only fade out if we're not currently in a transition
@@ -52,13 +74,14 @@ public class SceneTransitionManager : MonoBehaviour
             // Start with a clear screen (no fade effect on initial load)
             ClearFadeInstant();
         }
-        
+
         // Ensure the fade canvas doesn't block interactions when not transitioning
         SetCanvasInteractable(false);
     }
     
+
     /// <summary>
-    /// Initializes the fade UI components.
+    /// Initializes the fade UI components and ensures correct hierarchy and state.
     /// </summary>
     private void InitializeFadeUI()
     {
@@ -67,66 +90,67 @@ public class SceneTransitionManager : MonoBehaviour
         {
             CreateFadeCanvas();
         }
-        
+
         // Ensure canvas is always on top and properly configured
         if (fadeCanvas != null)
         {
             fadeCanvas.sortingOrder = 1000;
             fadeCanvas.planeDistance = 0.1f;
-            
+
             // Ensure the fade canvas is a child of this persistent GameObject
             if (fadeCanvas.transform.parent != transform)
             {
                 fadeCanvas.transform.SetParent(transform, false);
             }
         }
-        
-        // Set initial fade state
+
+        // Set initial fade state (fully transparent)
         if (fadeImage != null)
         {
             fadeImage.color = new Color(fadeColor.r, fadeColor.g, fadeColor.b, 0f);
         }
     }
     
+
     /// <summary>
-    /// Creates a fade canvas and image if they don't exist.
+    /// Creates a fade canvas and image if they don't exist, and configures their properties.
     /// </summary>
     private void CreateFadeCanvas()
     {
         // Create canvas
         GameObject canvasGO = new GameObject("FadeCanvas");
         canvasGO.transform.SetParent(transform);
-        
+
         fadeCanvas = canvasGO.AddComponent<Canvas>();
         fadeCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
         fadeCanvas.sortingOrder = 1000;
-        
+
         CanvasScaler scaler = canvasGO.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
-        
-                canvasGO.AddComponent<GraphicRaycaster>();
-        
+
+        canvasGO.AddComponent<GraphicRaycaster>();
+
         // Make sure the fade canvas doesn't block interactions by default
         GraphicRaycaster raycaster = canvasGO.GetComponent<GraphicRaycaster>();
         if (raycaster != null)
             raycaster.enabled = false;
-        
+
         // Create fade image
         GameObject imageGO = new GameObject("FadeImage");
         imageGO.transform.SetParent(fadeCanvas.transform, false);
-        
+
         fadeImage = imageGO.AddComponent<Image>();
         fadeImage.color = fadeColor;
-        
+
         // Make image fill the screen
         RectTransform rectTransform = fadeImage.GetComponent<RectTransform>();
         rectTransform.anchorMin = Vector2.zero;
         rectTransform.anchorMax = Vector2.one;
         rectTransform.offsetMin = Vector2.zero;
         rectTransform.offsetMax = Vector2.zero;
-        
-        // Set initial alpha to 0
+
+        // Set initial alpha to 0 (fully transparent)
         fadeImage.color = new Color(fadeColor.r, fadeColor.g, fadeColor.b, 0f);
     }
     
@@ -406,7 +430,7 @@ public class SceneTransitionManager : MonoBehaviour
     private IEnumerator FadeAudio(bool fadeIn, float duration)
     {
         // Get all audio sources in the scene
-        allAudioSources = FindObjectsOfType<AudioSource>();
+    allAudioSources = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
         
         if (allAudioSources.Length == 0) yield break;
         

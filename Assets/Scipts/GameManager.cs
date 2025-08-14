@@ -1,3 +1,12 @@
+/******************************************************************************
+ * File: GameManager.cs
+ * Author: Javier, Zenon, Joel
+ * Created: [Insert Date]
+ * Description: Central game controller for Delta Challenge. Manages game flow,
+ *              day and wave progression, customer and thief spawning, UI updates,
+ *              cutscenes, pause system, and player/camera management.
+ ******************************************************************************/
+
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -6,10 +15,16 @@ using System.Collections;
 using StarterAssets;
 using UnityEngine.Rendering;
 
+
+/// <summary>
+/// Data structure for daily requirements (number of thieves and minimum score).
+/// </summary>
 [System.Serializable]
 public class DayRequirement
 {
+    /// <summary>Number of thieves required for the day.</summary>
     public int thieves;
+    /// <summary>Minimum score required for the day.</summary>
     public int score;
     
     public DayRequirement(int thieves, int score)
@@ -19,108 +34,122 @@ public class DayRequirement
     }
 }
 
+
+/// <summary>
+/// Main game manager for Delta Challenge. Handles all game state, day and wave progression,
+/// customer and thief spawning, UI, cutscenes, pause, and player/camera management.
+/// </summary>
 public class GameManager : MonoBehaviour
 {
+    // ===================== Customer Spawning =====================
     [Header("Customer Spawning")]
-    [SerializeField] private GameObject[] customerPrefabs; // Array of different customer models
-    [SerializeField] private Transform spawnPoint;
-    [SerializeField] private Transform exitPoint; // Where customers leave the store
+    [SerializeField] private GameObject[] customerPrefabs; ///< Array of different customer models
+    [SerializeField] private Transform spawnPoint; ///< Customer spawn location
+    [SerializeField] private Transform exitPoint; ///< Where customers leave the store
 
+    // ===================== Customer Apprehension UI =====================
     [Header("Customer Apprehension UI")]
-    [SerializeField] private GameObject apprehensionPopup;
-    [SerializeField] private TextMeshProUGUI instructionsText;
+    [SerializeField] private GameObject apprehensionPopup; ///< Apprehension popup UI
+    [SerializeField] private TextMeshProUGUI instructionsText; ///< Instructions for apprehension
 
+    // ===================== Gameplay UI =====================
     [Header("Gameplay UI")]
-    [SerializeField] private TextMeshProUGUI dayText;
-    [SerializeField] private TextMeshProUGUI timeText;
-    [SerializeField] private TextMeshProUGUI dayTimeText; // New field for day time display
-    [SerializeField] private TextMeshProUGUI waveText;
-    [SerializeField] private TextMeshProUGUI trustFundText; // Trust fund numerical indicator
-    [SerializeField] private TextMeshProUGUI thiefText; // Thief numerical indicator
-    [SerializeField] private GameObject endOfDayPanel;
-    [SerializeField] private TextMeshProUGUI summaryText;
-    [SerializeField] private GameObject crosshairUI; // Crosshair to hide/show during camera switching
+    [SerializeField] private TextMeshProUGUI dayText; ///< Day display
+    [SerializeField] private TextMeshProUGUI timeText; ///< Timer display
+    [SerializeField] private TextMeshProUGUI dayTimeText; ///< Day time display
+    [SerializeField] private TextMeshProUGUI waveText; ///< Wave display
+    [SerializeField] private TextMeshProUGUI trustFundText; ///< Trust fund numerical indicator
+    [SerializeField] private TextMeshProUGUI thiefText; ///< Thief numerical indicator
+    [SerializeField] private GameObject endOfDayPanel; ///< End of day summary panel
+    [SerializeField] private TextMeshProUGUI summaryText; ///< End of day summary text
+    [SerializeField] private GameObject crosshairUI; ///< Crosshair to hide/show during camera switching
 
+    // ===================== UI Background Elements =====================
     [Header("UI Background Elements")]
-    [SerializeField] private GameObject dayWaveUIBackground; // Background panel for day and wave text
-    [SerializeField] private GameObject timeUIBackground; // Background panel for time text
-    [SerializeField] private GameObject dayTimeUIBackground; // Background panel for day time text
-    [SerializeField] private GameObject trustFundThiefUIBackground; // Background panel shared by trust fund and thief text
+    [SerializeField] private GameObject dayWaveUIBackground; ///< Background panel for day and wave text
+    [SerializeField] private GameObject timeUIBackground; ///< Background panel for time text
+    [SerializeField] private GameObject dayTimeUIBackground; ///< Background panel for day time text
+    [SerializeField] private GameObject trustFundThiefUIBackground; ///< Background panel shared by trust fund and thief text
 
+    // ===================== Cutscene =====================
     [Header("Cutscene")]
-    [SerializeField] private Camera cutsceneCamera; // Camera for escaped thieves cutscene
-    [SerializeField] private Transform prisonCellSpawnPoint; // Where escaped thieves appear in prison cell
-    [SerializeField] private TextMeshProUGUI cutsceneText; // Text UI for cutscene narration
-    [SerializeField] private GameObject cutsceneBackgroundPanel; // Background panel for cutscene text
-    [SerializeField] private float cameraMovementSpeed = 1f; // Speed of camera moving backwards
-    [SerializeField] private float cameraMovementDistance = 1.1f; // How far the camera moves back
+    [SerializeField] private Camera cutsceneCamera; ///< Camera for escaped thieves cutscene
+    [SerializeField] private Transform prisonCellSpawnPoint; ///< Where escaped thieves appear in prison cell
+    [SerializeField] private TextMeshProUGUI cutsceneText; ///< Text UI for cutscene narration
+    [SerializeField] private GameObject cutsceneBackgroundPanel; ///< Background panel for cutscene text
+    [SerializeField] private float cameraMovementDistance = 1.1f; ///< How far the camera moves back
 
+    // ===================== Cashier NPC =====================
     [Header("Cashier NPC")]
-    [SerializeField] private CashierBehaviour cashierBehaviour; // Reference to the cashier NPC script
+    [SerializeField] private CashierBehaviour cashierBehaviour; ///< Reference to the cashier NPC script
 
+    // ===================== Post Processing =====================
     [Header("Post Processing")]
-    [SerializeField] private Volume cctvVolume; // Volume with CCTV post-processing effects
-    [SerializeField] private Volume firstPersonVolume; // Volume with first-person post-processing effects
+    [SerializeField] private Volume cctvVolume; ///< Volume with CCTV post-processing effects
+    [SerializeField] private Volume firstPersonVolume; ///< Volume with first-person post-processing effects
 
+    // ===================== Lighting =====================
     [Header("Lighting")]
-    [SerializeField] private Light directionalLight; // Sun light that rotates during the day
+    [SerializeField] private Light directionalLight; ///< Sun light that rotates during the day
 
+    // ===================== Pause Menu =====================
     [Header("Pause Menu")]
-    [SerializeField] private GameObject pauseMenuPanel;
-    [SerializeField] private UnityEngine.UI.Button resumeButton;
-    [SerializeField] private UnityEngine.UI.Button restartButton;
-    [SerializeField] private UnityEngine.UI.Button mainMenuButton;
+    [SerializeField] private GameObject pauseMenuPanel; ///< Pause menu panel
+    [SerializeField] private UnityEngine.UI.Button resumeButton; ///< Resume button
+    [SerializeField] private UnityEngine.UI.Button restartButton; ///< Restart day button
+    [SerializeField] private UnityEngine.UI.Button mainMenuButton; ///< Main menu button
 
+    // ===================== Player References =====================
     [Header("Player References")]
-    [SerializeField] private GameObject playerObject; // Reference to the player GameObject
-    [SerializeField] private Transform playerSpawnPoint; // Where the player should spawn/respawn
-    [SerializeField] private CameraSystem cameraSystem; // Reference to the camera system
-    [SerializeField] private PlayerBehaviour playerBehaviour; // Reference to the player behaviour
+    [SerializeField] private GameObject playerObject; ///< Reference to the player GameObject
+    [SerializeField] private Transform playerSpawnPoint; ///< Where the player should spawn/respawn
+    [SerializeField] private CameraSystem cameraSystem; ///< Reference to the camera system
+    [SerializeField] private PlayerBehaviour playerBehaviour; ///< Reference to the player behaviour
 
-    // Gameplay Flow Variables
+    // ===================== Gameplay Flow Variables =====================
     [Header("Gameplay Settings")]
-    [SerializeField] private float dayDuration = 240f; // 4 minutes per day
-    [SerializeField] private float waveDuration = 60f; // 1 minute per wave
-    [SerializeField] private float restDuration = 10f; // 10 seconds rest between waves
-    [SerializeField] private int customersPerWave = 4; // Number of customers per wave
-    [SerializeField] private float customerSpawnInterval = 5f; // Time between customer spawns in a wave
+    [SerializeField] private float dayDuration = 240f; ///< 4 minutes per day
+    [SerializeField] private float waveDuration = 60f; ///< 1 minute per wave
+    [SerializeField] private float restDuration = 10f; ///< 10 seconds rest between waves
+    [SerializeField] private int customersPerWave = 4; ///< Number of customers per wave
+    [SerializeField] private float customerSpawnInterval = 5f; ///< Time between customer spawns in a wave
 
-    // Game State
-    private int currentDay = 1;
-    private int currentWave = 1;
-    private int playerScore = 0;
-    private float dayTimer = 0f;
-    private float waveTimer = 0f;
-    private float restTimer = 0f;
-    private bool isInWave = false;
-    private bool isResting = false;
-    private bool gameActive = false;
-    private bool dayComplete = false;
-    private bool gameCompleted = false; // Track if all 5 days are completed
-    private bool isPaused = false;
+    // ===================== Game State =====================
+    private int currentDay = 1; ///< Current day number
+    private int currentWave = 1; ///< Current wave number
+    private int playerScore = 0; ///< Player's trust fund score
+    private float dayTimer = 0f; ///< Timer for the day
+    private float waveTimer = 0f; ///< Timer for the current wave
+    private float restTimer = 0f; ///< Timer for rest period
+    private bool isInWave = false; ///< Is a wave currently active?
+    private bool isResting = false; ///< Is the game in a rest period?
+    private bool gameActive = false; ///< Is the game currently active?
+    private bool dayComplete = false; ///< Has the day been completed?
+    private bool gameCompleted = false; ///< Track if all 5 days are completed
+    private bool isPaused = false; ///< Is the game currently paused?
     
-    // Preparation phase
-    private bool isInPreparation = false;
-    private float preparationTimer = 0f;
-    private float preparationDuration = 8f; // 8 seconds preparation time
+    // ===================== Preparation phase =====================
+    private bool isInPreparation = false; ///< Is the game in the preparation phase?
+    private float preparationTimer = 0f; ///< Timer for preparation phase
+    private float preparationDuration = 8f; ///< 8 seconds preparation time
     
-    // Cursor state management
-    private CursorLockMode previousCursorLockState;
-    private bool previousCursorVisible;
+    // ===================== Cursor state management =====================
+    private CursorLockMode previousCursorLockState; ///< Previous cursor lock state
+    private bool previousCursorVisible; ///< Previous cursor visibility
 
-    // Current wave/day tracking
-    private List<GameObject> activeCustomers = new List<GameObject>();
-    private List<string> thiefsCaughtToday = new List<string>();
-    private List<string> thiefsEscapedToday = new List<string>();
-    private List<int> disabledCameras = new List<int>(); // Track cameras that are offline
-    private int thiefCountForDay = 0;
-    private int thievesSpawnedToday = 0;
-    private int thievesCaughtToday = 0;
+    // ===================== Current wave/day tracking =====================
+    private List<GameObject> activeCustomers = new List<GameObject>(); ///< List of active customers
+    private List<string> thiefsCaughtToday = new List<string>(); ///< List of caught thieves today
+    private List<string> thiefsEscapedToday = new List<string>(); ///< List of escaped thieves today
+    private List<int> disabledCameras = new List<int>(); ///< Track cameras that are offline
+    private int thiefCountForDay = 0; ///< Number of thieves for the day
+    private int thievesSpawnedToday = 0; ///< Number of thieves spawned today
+    private int thievesCaughtToday = 0; ///< Number of thieves caught today
     
-    // Thief wave distribution
-    private Dictionary<int, int> thievesPerWave = new Dictionary<int, int>(); // wave -> thief count
+    // ===================== Thief wave distribution =====================
+    private Dictionary<int, int> thievesPerWave = new Dictionary<int, int>(); ///< wave -> thief count
 
-    // Day requirements (day number -> required thieves, required score)
+    // ===================== Day requirements (day number -> required thieves, required score) =====================
     private Dictionary<int, DayRequirement> dayRequirements = new Dictionary<int, DayRequirement>
     {
         {1, new DayRequirement(1, 0)},
@@ -130,14 +159,14 @@ public class GameManager : MonoBehaviour
         {5, new DayRequirement(5, 300)}
     };
 
-    // Customer interaction tracking
-    private GameObject currentCustomer;
-    private Thief currentThief;
-    private bool awaitingPlayerDecision = false;
-    private bool isSpeedBoostActive = false; // Track if 10x speed is active
+    // ===================== Customer interaction tracking =====================
+    private GameObject currentCustomer; ///< Currently selected customer
+    private Thief currentThief; ///< Currently selected thief
+    private bool awaitingPlayerDecision = false; ///< Is the player making an apprehension decision?
+    private bool isSpeedBoostActive = false; ///< Track if 10x speed is active
 
-    // Final break period after last wave
-    private bool isFinalBreak = false;
+    // ===================== Final break period after last wave =====================
+    private bool isFinalBreak = false; ///< Is the game in the final break period?
 
     void Start()
     {
@@ -150,7 +179,7 @@ public class GameManager : MonoBehaviour
             instructionsText.text = "Press Y to Apprehend \n Press N to Cancel";
 
         // Initialize UI displays
-        UpdateAllUI();
+    UpdateUI();
         
         // Hide end panels
         if (endOfDayPanel != null)
@@ -208,10 +237,8 @@ public class GameManager : MonoBehaviour
         // Handle day progression input (works even when game is not active, but not when paused)
         if (!isPaused && Input.GetKeyDown(KeyCode.G))
         {
-            Debug.Log($"G pressed - dayComplete: {dayComplete}");
             if (!dayComplete)
             {
-                Debug.Log("Day is not complete yet, G key has no effect");
             }
         }
         
@@ -223,19 +250,16 @@ public class GameManager : MonoBehaviour
             if (isSpeedBoostActive)
             {
                 Time.timeScale = 10f;
-                Debug.Log("DEBUG: K pressed - 10x speed activated");
             }
             else
             {
                 Time.timeScale = 1f;
-                Debug.Log("DEBUG: K pressed - Normal speed restored");
             }
         }
         
         // DEBUG: Press J to instantly end day and catch all thieves (works even when game is not active, but not when paused)
         if (!isPaused && Input.GetKeyDown(KeyCode.J))
         {
-            Debug.Log("DEBUG: J pressed - Instantly ending day and catching all thieves");
             
             // Set score high enough to pass any day
             playerScore = 1000;
@@ -256,7 +280,6 @@ public class GameManager : MonoBehaviour
         
         if (!isPaused && dayComplete && Input.GetKeyDown(KeyCode.G))
         {
-            Debug.Log("G pressed - Day progression triggered");
             
             // Hide the end of day panel first
             if (endOfDayPanel != null)
@@ -264,18 +287,15 @@ public class GameManager : MonoBehaviour
                 
             // Check if day was passed to determine action
             bool dayPassed = CheckDayRequirements();
-            Debug.Log($"Day passed check: {dayPassed}");
             
             if (!dayPassed)
             {
                 // Day failed, restart current day
-                Debug.Log("Day failed - restarting current day");
                 RestartDay();
             }
             else if (gameCompleted)
             {
                 // Game completed, go to main menu with transition
-                Debug.Log("Game completed - returning to main menu");
                 
                 // Ensure cursor is unlocked for main menu
                 Cursor.lockState = CursorLockMode.None;
@@ -297,7 +317,6 @@ public class GameManager : MonoBehaviour
             else
             {
                 // Day passed, go to next day
-                Debug.Log($"Day passed - going from day {currentDay} to day {currentDay + 1}");
                 NextDay();
             }
         }
@@ -313,21 +332,17 @@ public class GameManager : MonoBehaviour
                 isInPreparation = false;
                 gameActive = true;
                 
-                Debug.Log("Preparation phase complete - starting first wave");
                 StartCoroutine(StartWaveAfterDelay(1f));
             }
             
-            UpdateTimeDisplay(); // Update UI during preparation
-            UpdateDayTimeDisplay();
-            UpdateWaveDisplay(); // Update wave display to show countdown
+            UpdateUI(); // Update all UI during preparation
             return; // Don't run normal game logic during preparation
         }
 
         // Only run game logic when gameActive is true and not paused
         if (!gameActive || isPaused) 
         {
-            UpdateTimeDisplay(); // Still update time display for UI
-            UpdateDayTimeDisplay(); // Still update day time display for UI
+            UpdateUI(); // Still update all UI
             return;
         }
 
@@ -349,10 +364,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Update UI
-        UpdateTimeDisplay();
-        UpdateDayTimeDisplay();
-        UpdateTrustFundDisplay();
-        UpdateThiefDisplay();
+    UpdateUI();
         UpdateSunRotation();
     }
 
@@ -363,7 +375,6 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void StartDay()
     {
-        Debug.Log($"=== STARTING DAY {currentDay} ===");
         
         // Reset day variables
         dayTimer = 0f;
@@ -391,8 +402,7 @@ public class GameManager : MonoBehaviour
             cameraSystem.RestoreAllCameraTextures();
 
         // Update UI immediately with new day values
-        UpdateTrustFundDisplay();
-        UpdateThiefDisplay();
+    UpdateUI();
 
         // Reset sun to starting position (night time) for the new day
         ResetSunPosition();
@@ -400,7 +410,6 @@ public class GameManager : MonoBehaviour
         // Configure day-specific settings (including thief count)
         ConfigureDaySettings();
         
-        Debug.Log($"Day {currentDay} started: Target {thiefCountForDay} thieves, {customersPerWave} customers per wave, 4 waves total");
         
         // Randomly distribute thieves across waves
         DistributeThievesAcrossWaves();
@@ -417,7 +426,7 @@ public class GameManager : MonoBehaviour
         // Disable a random camera for days 4 and 5
         DisableRandomCamera();
         
-        UpdateAllUI();
+    UpdateUI();
     }
 
     /// <summary>
@@ -429,7 +438,6 @@ public class GameManager : MonoBehaviour
         preparationTimer = 0f;
         gameActive = false; // Prevent normal game logic from running
         
-        Debug.Log($"Day {currentDay} preparation phase started - {preparationDuration} seconds to get ready");
     }
 
     /// <summary>
@@ -445,41 +453,34 @@ public class GameManager : MonoBehaviour
             case 1:
                 // Day 1: Tutorial - Easy settings
                 thiefCountForDay = 1;
-                Debug.Log("Day 1: Tutorial mode - 1 thief");
                 break;
                 
             case 2:
                 // Day 2: Slightly more challenging
                 thiefCountForDay = 2;
-                Debug.Log("Day 2: Increased challenge - 2 thieves");
                 break;
                 
             case 3:
                 // Day 3: More thieves
                 thiefCountForDay = 3;
-                Debug.Log("Day 3: Higher difficulty - 3 thieves");
                 break;
                 
             case 4:
                 // Day 4: High intensity
                 thiefCountForDay = 4;
-                Debug.Log("Day 4: High intensity - 4 thieves");
                 break;
                 
             case 5:
                 // Day 5: Maximum challenge
                 thiefCountForDay = 5;
-                Debug.Log("Day 5: Maximum challenge - 5 thieves");
                 break;
                 
             default:
                 // Fallback to standard settings
                 thiefCountForDay = 1;
-                Debug.LogWarning($"Day {currentDay}: Using default settings");
                 break;
         }
         
-        Debug.Log($"Day {currentDay} Configuration: {customersPerWave} customers/wave, {thiefCountForDay} thieves total");
     }
 
     /// <summary>
@@ -508,28 +509,16 @@ public class GameManager : MonoBehaviour
                     availableWaves.Add(wave);
                 }
             }
-            
             if (availableWaves.Count == 0)
             {
-                Debug.LogWarning($"Cannot fit all {thiefCountForDay} thieves with max 2 per wave!");
                 break;
             }
-            
             // Randomly select a wave and add a thief
             int randomWaveIndex = Random.Range(0, availableWaves.Count);
             int selectedWave = availableWaves[randomWaveIndex];
             thievesPerWave[selectedWave]++;
             remainingThieves--;
         }
-        
-        // Debug output
-        string distribution = "Thief distribution: ";
-        for (int wave = 1; wave <= 4; wave++)
-        {
-            distribution += $"Wave {wave}: {thievesPerWave[wave]} thieves";
-            if (wave < 4) distribution += ", ";
-        }
-        Debug.Log(distribution);
     }
 
     /// <summary>
@@ -537,7 +526,6 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void EndDay()
     {
-        Debug.Log($"=== DAY {currentDay} COMPLETE ===");
         
         dayComplete = true;
         gameActive = false;
@@ -559,12 +547,10 @@ public class GameManager : MonoBehaviour
         // If any thieves escaped, play the cutscene before showing end-of-day panel
         if (thiefsEscapedToday != null && thiefsEscapedToday.Count > 0)
         {
-            Debug.Log($"Starting cutscene for {thiefsEscapedToday.Count} escaped thieves");
             StartCoroutine(PlayEscapedThievesCutsceneCoroutine());
         }
         else
         {
-            Debug.Log("No escaped thieves, showing summary panel directly");
             ShowSummaryPanelAfterCutscene();
         }
     }
@@ -572,7 +558,6 @@ public class GameManager : MonoBehaviour
     // Plays a cutscene for escaped thieves, then shows the summary panel
     private IEnumerator PlayEscapedThievesCutsceneCoroutine()
     {
-        Debug.Log("Starting escaped thieves prison cell cutscene");
         
         // Switch to cutscene camera if available
         Camera originalCamera = null;
@@ -625,16 +610,12 @@ public class GameManager : MonoBehaviour
         List<GameObject> prisonThieves = new List<GameObject>();
         if (prisonCellSpawnPoint != null && customerPrefabs != null && customerPrefabs.Length > 0)
         {
-            Debug.Log($"Spawning {thiefsEscapedToday.Count} thieves in prison cell");
-            
             for (int i = 0; i < thiefsEscapedToday.Count; i++)
             {
                 // Pick a random customer prefab for the escaped thief
                 GameObject thiefPrefab = customerPrefabs[Random.Range(0, customerPrefabs.Length)];
-                
                 // Position thieves in a semi-circle or grid pattern inside the prison cell
                 Vector3 spawnPos;
-                
                 if (thiefsEscapedToday.Count == 1)
                 {
                     // Single thief at center
@@ -657,11 +638,7 @@ public class GameManager : MonoBehaviour
                     float xOffset = xSpacing * 0.5f; // Center the row of 2
                     spawnPos = prisonCellSpawnPoint.position + new Vector3(col * xSpacing - xOffset, 0, row * zSpacing);
                 }
-                
                 GameObject prisonThief = Instantiate(thiefPrefab, spawnPos, Quaternion.identity);
-                
-                Debug.Log($"Spawned prison thief {i + 1} at position {spawnPos}");
-                
                 // Make thief face the camera
                 if (cutsceneCamera != null)
                 {
@@ -670,23 +647,16 @@ public class GameManager : MonoBehaviour
                     if (lookDirection != Vector3.zero)
                         prisonThief.transform.rotation = Quaternion.LookRotation(lookDirection);
                 }
-                
                 // Disable the thief AI script to prevent movement
                 Thief thiefScript = prisonThief.GetComponent<Thief>();
                 if (thiefScript != null)
                     thiefScript.enabled = false;
-                
                 // Disable NavMeshAgent if present to prevent movement
                 UnityEngine.AI.NavMeshAgent navAgent = prisonThief.GetComponent<UnityEngine.AI.NavMeshAgent>();
                 if (navAgent != null)
                     navAgent.enabled = false;
-                
                 prisonThieves.Add(prisonThief);
             }
-        }
-        else
-        {
-            Debug.LogWarning("Prison cell spawn point or customer prefabs not assigned!");
         }
         
         // Show the cutscene text
@@ -762,7 +732,6 @@ public class GameManager : MonoBehaviour
                 crosshairUI.SetActive(true);
         }
         
-        Debug.Log("Prison cell cutscene complete, showing summary panel");
         
         // Show the summary panel after cutscene
         ShowSummaryPanelAfterCutscene();
@@ -778,11 +747,11 @@ public class GameManager : MonoBehaviour
             if (dayPassed)
             {
                 gameCompleted = true;
-                ShowEndOfDayPanelForCompletion(true);
+                ShowEndOfDayPanel(true);
             }
             else
             {
-                ShowEndOfDayPanelForCompletion(false);
+                ShowEndOfDayPanel(false);
             }
         }
         else if (dayPassed)
@@ -807,8 +776,6 @@ public class GameManager : MonoBehaviour
         var requirements = dayRequirements[currentDay];
         bool scoreRequirementMet = playerScore >= requirements.score;
         
-        Debug.Log($"Day {currentDay} Requirements: Score >= {requirements.score} (Current: {playerScore}), " +
-                  $"Thieves: {requirements.thieves} (Spawned: {thievesSpawnedToday}, Caught: {thievesCaughtToday})");
         
         return scoreRequirementMet;
     }
@@ -821,14 +788,11 @@ public class GameManager : MonoBehaviour
         if (gameCompleted)
         {
             // Game was completed, this should not happen as the button should load main menu
-            Debug.LogWarning("NextDay() called after game completion - this should not happen!");
             return;
         }
-        
         if (currentDay >= 5)
         {
             // This should not happen anymore since completion is handled in EndDay()
-            Debug.LogWarning("NextDay() called on day 5 or higher - completion should be handled in EndDay()!");
             return;
         }
 
@@ -924,11 +888,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void StartWave()
     {
-        Debug.Log($"=== STARTING WAVE {currentWave} ===");
-        
-        // Debug: Show thief distribution for this wave
-        int thievesForThisWave = thievesPerWave.ContainsKey(currentWave) ? thievesPerWave[currentWave] : 0;
-        Debug.Log($"Wave {currentWave} should have {thievesForThisWave} thieves according to distribution");
+    // int thievesForThisWave = thievesPerWave.ContainsKey(currentWave) ? thievesPerWave[currentWave] : 0;
         
         isInWave = true;
         isResting = false;
@@ -937,7 +897,7 @@ public class GameManager : MonoBehaviour
         // Start spawning customers for this wave
         StartCoroutine(SpawnWaveCustomers());
         
-        UpdateAllUI();
+    UpdateUI();
     }
 
     /// <summary>
@@ -951,19 +911,13 @@ public class GameManager : MonoBehaviour
         // Track used customer prefab indices to avoid duplicates in the same wave
         List<int> usedPrefabIndices = new List<int>();
         
-        Debug.Log($"Starting Wave {currentWave}: Planning to spawn {thievesToSpawnThisWave} thieves out of {customersPerWave} total customers");
-        
         // If no thieves should spawn in this wave, spawn all regular customers
         if (thievesToSpawnThisWave == 0)
         {
-            Debug.Log($"Wave {currentWave}: No thieves assigned - spawning {customersPerWave} regular customers");
-            
             while (customersSpawned < customersPerWave && isInWave)
             {
-                Debug.Log($"Spawning REGULAR customer in wave {currentWave} (customer {customersSpawned + 1}/{customersPerWave})");
                 SpawnCustomer(false, usedPrefabIndices); // false = regular customer
                 customersSpawned++;
-                
                 yield return new WaitForSeconds(customerSpawnInterval);
             }
         }
@@ -971,19 +925,16 @@ public class GameManager : MonoBehaviour
         {
             // Create a list to determine which customer positions should be thieves
             List<bool> customerTypes = new List<bool>();
-            
             // Add thieves for this wave
             for (int i = 0; i < thievesToSpawnThisWave; i++)
             {
                 customerTypes.Add(true); // true = thief
             }
-            
             // Fill remaining positions with regular customers
             for (int i = thievesToSpawnThisWave; i < customersPerWave; i++)
             {
                 customerTypes.Add(false); // false = regular customer
             }
-            
             // Shuffle the list to randomize thief positions within the wave
             for (int i = 0; i < customerTypes.Count; i++)
             {
@@ -992,39 +943,19 @@ public class GameManager : MonoBehaviour
                 customerTypes[i] = customerTypes[randomIndex];
                 customerTypes[randomIndex] = temp;
             }
-            
-            // Debug: Show the planned spawn order
-            string spawnOrder = "Spawn order: ";
-            for (int i = 0; i < customerTypes.Count; i++)
-            {
-                spawnOrder += customerTypes[i] ? "T" : "R";
-                if (i < customerTypes.Count - 1) spawnOrder += ", ";
-            }
-            Debug.Log(spawnOrder);
-            
             // Spawn customers according to the randomized order
             while (customersSpawned < customersPerWave && isInWave)
             {
                 bool shouldBeThief = customerTypes[customersSpawned];
-                
                 if (shouldBeThief)
                 {
                     thievesSpawnedToday++;
-                    Debug.Log($"Spawning THIEF #{thievesSpawnedToday} in wave {currentWave} (customer {customersSpawned + 1}/{customersPerWave})");
                 }
-                else
-                {
-                    Debug.Log($"Spawning REGULAR customer in wave {currentWave} (customer {customersSpawned + 1}/{customersPerWave})");
-                }
-                
                 SpawnCustomer(shouldBeThief, usedPrefabIndices);
                 customersSpawned++;
-                
                 yield return new WaitForSeconds(customerSpawnInterval);
             }
         }
-        
-        Debug.Log($"Wave {currentWave} spawning complete: {customersSpawned} customers spawned, {thievesSpawnedToday} total thieves so far");
     }
 
     /// <summary>
@@ -1046,7 +977,7 @@ public class GameManager : MonoBehaviour
             isFinalBreak = true;
             isResting = true;
             restTimer = 0f;
-            UpdateAllUI();
+            UpdateUI();
             return;
         }
         
@@ -1054,7 +985,7 @@ public class GameManager : MonoBehaviour
         isResting = true;
         restTimer = 0f;
         
-        UpdateAllUI();
+    UpdateUI();
     }
 
     /// <summary>
@@ -1181,7 +1112,7 @@ public class GameManager : MonoBehaviour
             Debug.Log($"Thief escaped! -100 points. Trust Fund: {playerScore}");
             
             // Update UI immediately to reflect the new score
-            UpdateAllUI();
+            UpdateUI();
         }
         
         // Remove customer from tracking and destroy
@@ -1375,7 +1306,7 @@ public class GameManager : MonoBehaviour
             ShowFeedback("CORRECT! Thief Apprehended! +100 points", Color.green);
             
             // Update UI immediately to reflect the new thief count
-            UpdateAllUI();
+            UpdateUI();
         }
         else if (isActualThief && warningCount >= 1 && warningCount < 3)
         {
@@ -1387,7 +1318,7 @@ public class GameManager : MonoBehaviour
             ShowFeedback($"EARLY ARREST! Only {warningCount} warnings! -50 points", Color.yellow);
             
             // Update UI immediately to reflect the new thief count
-            UpdateAllUI();
+            UpdateUI();
         }
         else if (!isActualThief && warningCount >= 1 && warningCount < 3)
         {
@@ -1397,7 +1328,7 @@ public class GameManager : MonoBehaviour
             ShowFeedback($"WRONG! Innocent with {warningCount} warnings! -50 points", Color.yellow);
             
             // Update UI immediately to reflect the new score
-            UpdateAllUI();
+            UpdateUI();
         }
         else
         {
@@ -1407,7 +1338,7 @@ public class GameManager : MonoBehaviour
             ShowFeedback("WRONG! Innocent Customer! -100 points", Color.red);
             
             // Update UI immediately to reflect the new score
-            UpdateAllUI();
+            UpdateUI();
         }
         
         // Remove customer from store and tracking
@@ -1464,143 +1395,103 @@ public class GameManager : MonoBehaviour
 
     #region UI Management
 
-    /// <summary>
-    /// Updates all UI displays.
-    /// </summary>
-    private void UpdateAllUI()
-    {
-        UpdateDayDisplay();
-        UpdateWaveDisplay();
-        UpdateDayTimeDisplay();
-    }
 
-    /// <summary>
-    /// Updates the day display UI.
-    /// </summary>
-    private void UpdateDayDisplay()
-    {
-        if (dayText != null)
-            dayText.text = $"Day {currentDay}/5";
-    }
-
-    /// <summary>
-    /// Updates the wave display UI.
-    /// </summary>
-    private void UpdateWaveDisplay()
-    {
-        if (waveText != null)
+        /// <summary>
+        /// Updates all UI displays in a consolidated way.
+        /// </summary>
+        private void UpdateUI()
         {
-            if (isInPreparation)
-            {
-                int remainingSeconds = Mathf.CeilToInt(preparationDuration - preparationTimer);
-                waveText.text = $"Waiting: {remainingSeconds}s";
-            }
-            else if (dayComplete)
-                waveText.text = "Day Complete";
-            else if (isInWave)
-                waveText.text = $"Wave {currentWave}/4";
-            else if (isResting)
-                waveText.text = "Rest";
-            else
-                waveText.text = "Preparing";
-        }
-    }
+            // Day
+            if (dayText != null)
+                dayText.text = $"Day {currentDay}/5";
 
-    /// <summary>
-    /// Updates the time display UI.
-    /// </summary>
-    private void UpdateTimeDisplay()
-    {
-        if (timeText != null)
-        {
-            if (isInWave)
+            // Wave
+            if (waveText != null)
             {
-                // Show time remaining in current wave
-                float waveTimeRemaining = waveDuration - waveTimer;
-                int minutes = Mathf.FloorToInt(waveTimeRemaining / 60f);
-                int seconds = Mathf.FloorToInt(waveTimeRemaining % 60f);
-                timeText.text = $"{minutes:00}:{seconds:00}";
+                if (isInPreparation)
+                {
+                    int remainingSeconds = Mathf.CeilToInt(preparationDuration - preparationTimer);
+                    waveText.text = $"Waiting: {remainingSeconds}s";
+                }
+                else if (dayComplete)
+                    waveText.text = "Day Complete";
+                else if (isInWave)
+                    waveText.text = $"Wave {currentWave}/4";
+                else if (isResting)
+                    waveText.text = "Rest";
+                else
+                    waveText.text = "Preparing";
             }
-            else if (isResting)
-            {
-                // Show rest time remaining
-                float restTimeRemaining = restDuration - restTimer;
-                int restSeconds = Mathf.FloorToInt(restTimeRemaining);
-                timeText.text = $"{restSeconds}s";
-            }
-            else
-            {
-                // Show preparing message
-                timeText.text = "Preparing";
-            }
-        }
-    }
 
-    /// <summary>
-    /// Updates the day time display UI.
-    /// </summary>
-    private void UpdateDayTimeDisplay()
-    {
-        if (dayTimeText != null)
-        {
-            // Convert to in-game time (12am to 9am = 9 hours over 4 minutes)
-            float gameTimeProgress = dayTimer / dayDuration;
-            float gameHour = 0f + (gameTimeProgress * 9f); // 12am = 0, 9am = 9
-            int displayHour = Mathf.FloorToInt(gameHour);
-            int displayMinute = Mathf.FloorToInt((gameHour - displayHour) * 60f);
-            string period = "AM";
-            int displayHour12 = displayHour;
-            if (displayHour == 0) displayHour12 = 12; // 0 = 12 AM
-            else if (displayHour > 12) { displayHour12 = displayHour - 12; period = "PM"; }
-            dayTimeText.text = $"{displayHour12:00}:{displayMinute:00} {period}";
-
-            // End the day at 9:01am or later
-            if (!dayComplete && gameActive && displayHour == 9 && displayMinute >= 1)
+            // Time
+            if (timeText != null)
             {
-                EndDay();
+                if (isInWave)
+                {
+                    float waveTimeRemaining = waveDuration - waveTimer;
+                    int minutes = Mathf.FloorToInt(waveTimeRemaining / 60f);
+                    int seconds = Mathf.FloorToInt(waveTimeRemaining % 60f);
+                    timeText.text = $"{minutes:00}:{seconds:00}";
+                }
+                else if (isResting)
+                {
+                    float restTimeRemaining = restDuration - restTimer;
+                    int restSeconds = Mathf.FloorToInt(restTimeRemaining);
+                    timeText.text = $"{restSeconds}s";
+                }
+                else
+                {
+                    timeText.text = "Preparing";
+                }
             }
-        }
-    }
 
-    /// <summary>
-    /// Updates the trust fund display UI showing current/required.
-    /// </summary>
-    private void UpdateTrustFundDisplay()
-    {
-        if (trustFundText != null)
-        {
-            if (dayRequirements.ContainsKey(currentDay))
+            // Day Time
+            if (dayTimeText != null)
             {
-                var requirements = dayRequirements[currentDay];
-                trustFundText.text = $"{playerScore}/{requirements.score}";
+                float gameTimeProgress = dayTimer / dayDuration;
+                float gameHour = 0f + (gameTimeProgress * 9f);
+                int displayHour = Mathf.FloorToInt(gameHour);
+                int displayMinute = Mathf.FloorToInt((gameHour - displayHour) * 60f);
+                string period = "AM";
+                int displayHour12 = displayHour;
+                if (displayHour == 0) displayHour12 = 12;
+                else if (displayHour > 12) { displayHour12 = displayHour - 12; period = "PM"; }
+                dayTimeText.text = $"{displayHour12:00}:{displayMinute:00} {period}";
+
+                if (!dayComplete && gameActive && displayHour == 9 && displayMinute >= 1)
+                {
+                    EndDay();
+                }
             }
-            else
+
+            // Trust Fund
+            if (trustFundText != null)
             {
-                // Fallback for days without requirements
-                trustFundText.text = $"{playerScore}/0";
+                if (dayRequirements.ContainsKey(currentDay))
+                {
+                    var requirements = dayRequirements[currentDay];
+                    trustFundText.text = $"{playerScore}/{requirements.score}";
+                }
+                else
+                {
+                    trustFundText.text = $"{playerScore}/0";
+                }
+            }
+
+            // Thief
+            if (thiefText != null)
+            {
+                if (dayRequirements.ContainsKey(currentDay))
+                {
+                    var requirements = dayRequirements[currentDay];
+                    thiefText.text = $"{thievesCaughtToday}/{requirements.thieves}";
+                }
+                else
+                {
+                    thiefText.text = $"{thievesCaughtToday}/0";
+                }
             }
         }
-    }
-
-    /// <summary>
-    /// Updates the thief display UI showing caught/required.
-    /// </summary>
-    private void UpdateThiefDisplay()
-    {
-        if (thiefText != null)
-        {
-            if (dayRequirements.ContainsKey(currentDay))
-            {
-                var requirements = dayRequirements[currentDay];
-                thiefText.text = $"{thievesCaughtToday}/{requirements.thieves}";
-            }
-            else
-            {
-                // Fallback for days without requirements
-                thiefText.text = $"{thievesCaughtToday}/0";
-            }
-        }
-    }
 
     /// <summary>
     /// Resets the directional light to its starting position (night time) at the beginning of each day.
@@ -1683,29 +1574,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Shows the end of day panel with game completion message.
-    /// </summary>
-    /// <param name="dayPassed">Whether the player passed the final day</param>
-    private void ShowEndOfDayPanelForCompletion(bool dayPassed)
-    {
-        Debug.Log($"=== SHOWING GAME COMPLETION PANEL ===");
-        
-        if (endOfDayPanel != null)
-        {
-            endOfDayPanel.SetActive(true);
-            if (summaryText != null)
-            {
-                string summary = GenerateDaySummary(dayPassed);
-                summaryText.text = summary;
-                Debug.Log("Game completion summary displayed");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("endOfDayPanel is null - cannot show completion message!");
-        }
-    }
 
     /// <summary>
     /// Generates the end-of-day summary text.
@@ -1756,7 +1624,7 @@ public class GameManager : MonoBehaviour
     /// <param name="color">Message color</param>
     private void ShowFeedback(string message, Color color)
     {
-        // TODO: Implement actual feedback UI (could be a popup or status message)
+        
         Debug.Log($"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{message}</color>");
     }
 
@@ -2183,44 +2051,6 @@ public class GameManager : MonoBehaviour
 
     #region Public Button Methods (for UI)
 
-    /// <summary>
-    /// Button method to proceed to next day.
-    /// </summary>
-    public void OnNextDayButton()
-    {
-        // Ensure all controls are properly restored before proceeding
-        if (isPaused)
-        {
-            ResumeGame(); // This handles all control restoration properly
-        }
-        
-        if (endOfDayPanel != null)
-            endOfDayPanel.SetActive(false);
-        
-        // If game is completed, return to main menu instead of proceeding
-        if (gameCompleted)
-        {
-            // Ensure cursor is unlocked for main menu
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-            
-            // Load main menu scene with transition
-            if (SceneTransitionManager.Instance != null)
-            {
-                SceneTransitionManager.Instance.FadeTransition(2f, 1f, () => {
-                    UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
-                });
-            }
-            else
-            {
-                // Fallback if no transition manager
-                UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
-            }
-            return;
-        }
-            
-        NextDay();
-    }
 
     /// <summary>
     /// Button method to restart current day.

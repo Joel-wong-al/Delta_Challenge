@@ -10,20 +10,50 @@ using UnityEngine;
 
 public class SlidingDoor : MonoBehaviour
 {
+    /// <summary>
+    /// Transform of the left door panel.
+    /// </summary>
     public Transform leftDoor;
+
+    /// <summary>
+    /// Transform of the right door panel.
+    /// </summary>
     public Transform rightDoor;
+
+    /// <summary>
+    /// Local offset to move the left door when opening.
+    /// </summary>
     public Vector3 leftOpenOffset = new Vector3(-1.5f, 0, 0);
+
+    /// <summary>
+    /// Local offset to move the right door when opening.
+    /// </summary>
     public Vector3 rightOpenOffset = new Vector3(1.5f, 0, 0);
+
+    /// <summary>
+    /// Speed at which the doors open and close.
+    /// </summary>
     public float moveSpeed = 2f;
 
-    private Vector3 leftClosedPos;
-    private Vector3 rightClosedPos;
-    private Vector3 leftOpenPos;
-    private Vector3 rightOpenPos;
+    // Internal state for door positions
+    private Vector3 leftClosedPos;   // Closed position of the left door
+    private Vector3 rightClosedPos;  // Closed position of the right door
+    private Vector3 leftOpenPos;     // Open position of the left door
+    private Vector3 rightOpenPos;    // Open position of the right door
 
-    public float doorOpenRadius = 3f; // Distance to detect customers
+    /// <summary>
+    /// Radius within which customers will trigger the door to open.
+    /// </summary>
+    public float doorOpenRadius = 3f;
+
+    /// <summary>
+    /// True if a customer is within the trigger radius.
+    /// </summary>
     private bool isCustomerInTrigger = false;
 
+    /// <summary>
+    /// Unity Start method. Initializes door positions.
+    /// </summary>
     void Start()
     {
         leftClosedPos = leftDoor.localPosition;
@@ -32,34 +62,37 @@ public class SlidingDoor : MonoBehaviour
         rightOpenPos = rightClosedPos + rightOpenOffset;
     }
 
+    /// <summary>
+    /// Unity Update method. Checks for customers and animates doors.
+    /// </summary>
     void Update()
     {
         // Backup detection method using distance checking
         CheckForCustomersNearby();
-        
+
         if (isCustomerInTrigger)
         {
-            // Open door
+            // Open door smoothly
             leftDoor.localPosition = Vector3.Lerp(leftDoor.localPosition, leftOpenPos, Time.deltaTime * moveSpeed);
             rightDoor.localPosition = Vector3.Lerp(rightDoor.localPosition, rightOpenPos, Time.deltaTime * moveSpeed);
         }
         else
         {
-            // Close door
+            // Close door smoothly
             leftDoor.localPosition = Vector3.Lerp(leftDoor.localPosition, leftClosedPos, Time.deltaTime * moveSpeed);
             rightDoor.localPosition = Vector3.Lerp(rightDoor.localPosition, rightClosedPos, Time.deltaTime * moveSpeed);
         }
     }
 
     /// <summary>
-    /// Backup method to detect customers using distance checking
-    /// Works better with NavMeshAgent than trigger collisions
+    /// Detects if any customers are within the door's open radius.
+    /// Uses distance checking for compatibility with NavMeshAgent.
     /// </summary>
     private void CheckForCustomersNearby()
     {
         GameObject[] customers = GameObject.FindGameObjectsWithTag("Customer");
         bool customerFound = false;
-        
+
         foreach (GameObject customer in customers)
         {
             if (customer != null)
@@ -72,8 +105,8 @@ public class SlidingDoor : MonoBehaviour
                 }
             }
         }
-        
-        // Only update if state changed to avoid spam
+
+        // Only update if state changed to avoid unnecessary updates
         if (customerFound != isCustomerInTrigger)
         {
             isCustomerInTrigger = customerFound;
@@ -81,7 +114,7 @@ public class SlidingDoor : MonoBehaviour
     }
 
     /// <summary>
-    /// Draw the detection radius in the Scene view for debugging
+    /// Draws the detection radius in the Scene view for debugging.
     /// </summary>
     private void OnDrawGizmosSelected()
     {

@@ -1,10 +1,11 @@
-/******************************************************************************
+﻿/******************************************************************************
  * File: Thief.cs
- * Author: Javier
+ * Author: Javier, Zenon, Joel
  * Created: [Insert Date]
- * Description: Controls the behavior of customer NPCs. Includes logic for navigating 
- *              to random shelves, showing predetermined warning signs, and determining 
- *              thief status based on warning count.
+ * Description: Controls the behavior of customer NPCs and thieves. Includes logic for
+ *              navigating to random shelves, showing warning signs, and determining
+ *              thief status based on warning count. Handles navigation, animation,
+ *              warning system, and forced exit logic for the Delta Challenge game.
  ******************************************************************************/
 
 using UnityEngine;
@@ -12,13 +13,13 @@ using UnityEngine.AI;
 using System.Collections;
 
 /// <summary>
-/// Handles customer NPC behavior including shelf navigation, warning system,
-/// and thief determination based on predetermined warning counts.
+/// Handles customer NPC and thief behavior including shelf navigation, warning system,
+/// animation, and forced exit logic. Determines thief status based on warning count.
 /// </summary>
 public class Thief : MonoBehaviour
 {
     /// <summary>
-    /// Reference to the NavMeshAgent for pathfinding.
+    /// Reference to the NavMeshAgent for pathfinding and movement.
     /// </summary>
     private NavMeshAgent myAgent;
 
@@ -33,12 +34,12 @@ public class Thief : MonoBehaviour
     private Transform[] shelfLandmarks;
 
     /// <summary>
-    /// How long the customer spends at each shelf location.
+    /// How long the customer spends at each shelf location (in seconds).
     /// </summary>
     [SerializeField] private float shelfTime = 5f;
 
     /// <summary>
-    /// Time interval between warning sign displays.
+    /// Time interval (in seconds) between warning sign displays.
     /// </summary>
     [SerializeField] private float warningInterval = 8f;
 
@@ -64,7 +65,7 @@ public class Thief : MonoBehaviour
     private float rotationSpeed = 180f;
 
     /// <summary>
-    /// How close the customer must get to a shelf checkpoint before stopping.
+    /// How close the customer must get to a shelf checkpoint before stopping (in units).
     /// </summary>
     private float stopDistance = 0.5f;
 
@@ -89,7 +90,7 @@ public class Thief : MonoBehaviour
     private int currentShelfIndex = 0;
 
     /// <summary>
-    /// The current state of the customer ("Moving", "AtShelf", "Browsing").
+    /// The current state of the customer ("Moving", "AtShelf", "Browsing", "Exiting").
     /// </summary>
     private string currentState;
 
@@ -97,7 +98,7 @@ public class Thief : MonoBehaviour
     /// Timer for warning sign intervals.
     /// </summary>
     private float warningTimer = 0f;
-    
+
     /// <summary>
     /// Whether this customer has been initialized by the GameManager.
     /// </summary>

@@ -1,24 +1,38 @@
+﻿/******************************************************************************
+ * File: CashierBehaviour.cs
+ * Author: Javier, Zenon, Joel
+ * Created: 12 August 2025
+ * Description: Controls the cashier NPC's behavior, including queuing, movement,
+ *              animation, and apprehension logic for the Delta Challenge game.
+ ******************************************************************************/
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+
+/// <summary>
+/// Controls the cashier NPC's behavior, including queuing, movement, animation,
+/// and apprehension logic for the Delta Challenge game.
+/// </summary>
 public class CashierBehaviour : MonoBehaviour
 {
+    // ===================== Cashier Settings =====================
     [Header("Cashier Settings")]
-    [SerializeField] private Transform startPosition; // Optional: where cashier returns to
-    [SerializeField] private float apprehendRange = 1.2f; // Distance at which cashier apprehends customer
-    
+    [SerializeField] private Transform startPosition; ///< Optional: where cashier returns to after apprehension
+    [SerializeField] private float apprehendRange = 1.2f; ///< Distance at which cashier apprehends customer
+
+    // ===================== Animation =====================
     [Header("Animation")]
-    [SerializeField] private Animator animator; // Optional: for walking animations
-    
-    // Runtime variables
-    private Vector3 originalPosition;
-    private Quaternion originalRotation;
-    private bool isMoving = false;
-    private GameManager gameManager;
-    private NavMeshAgent navAgent;
-    private Queue<(GameObject, Thief)> apprehensionQueue = new Queue<(GameObject, Thief)>();
+    [SerializeField] private Animator animator; ///< Optional: for walking/idle animations
+
+    // ===================== Runtime Variables =====================
+    private Vector3 originalPosition; ///< Cashier's home/original position
+    private Quaternion originalRotation; ///< Cashier's home/original rotation
+    private bool isMoving = false; ///< True if cashier is currently moving
+    private GameManager gameManager; ///< Reference to the GameManager
+    private NavMeshAgent navAgent; ///< NavMeshAgent for movement
+    private Queue<(GameObject, Thief)> apprehensionQueue = new Queue<(GameObject, Thief)>(); ///< Queue of customers to apprehend
     
     void Start()
     {
@@ -37,7 +51,7 @@ public class CashierBehaviour : MonoBehaviour
         }
         
         // Find GameManager reference
-        gameManager = FindObjectOfType<GameManager>();
+    gameManager = FindFirstObjectByType<GameManager>();
         if (gameManager == null)
         {
             Debug.LogError("CashierBehaviour: GameManager not found!");

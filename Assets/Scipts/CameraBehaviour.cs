@@ -1,6 +1,6 @@
 /******************************************************************************
 * File: CameraBehaviour.cs
-* Author: Javier
+* Author: Javier, Zenon, Joel
 * Created: [Insert Date]
 * Description: Handles raycasting from the currently active camera in a 
 *              multi-camera surveillance system. Supports mouse interaction
