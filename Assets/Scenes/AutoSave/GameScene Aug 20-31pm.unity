@@ -3056,6 +3056,8 @@ Transform:
   - {fileID: 54489194}
   - {fileID: 1719720850}
   - {fileID: 1524093652}
+  - {fileID: 627131336}
+  - {fileID: 362042852}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &81089399
@@ -18375,12 +18377,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 362042851}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -16.140148, y: 0.2383742, z: -44.52}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.8550606, y: -1.5097353, z: 0.89300156}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 80780444}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &363397964
 PrefabInstance:
@@ -26357,11 +26359,11 @@ Transform:
   m_GameObject: {fileID: 627131332}
   serializedVersion: 2
   m_LocalRotation: {x: -0.02195151, y: -0.69716555, z: 0.021326846, w: -0.7162566}
-  m_LocalPosition: {x: -18.976402, y: 2.0569587, z: -43.966835}
+  m_LocalPosition: {x: -0.98119354, y: 0.3088491, z: 1.446167}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 80780444}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &628576066
 PrefabInstance:
@@ -30576,7 +30578,7 @@ MonoBehaviour:
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
-  m_ScreenMatchMode: 0
+  m_ScreenMatchMode: 1
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
@@ -49668,7 +49670,6 @@ MonoBehaviour:
   prisonCellSpawnPoint: {fileID: 362042852}
   cutsceneText: {fileID: 265063162}
   cutsceneBackgroundPanel: {fileID: 987841721}
-  cameraMovementSpeed: 1
   cameraMovementDistance: 1.5
   cashierBehaviour: {fileID: 1902886998}
   cctvVolume: {fileID: 1926608558}
@@ -49682,11 +49683,6 @@ MonoBehaviour:
   playerSpawnPoint: {fileID: 1645091585}
   cameraSystem: {fileID: 0}
   playerBehaviour: {fileID: 0}
-  dayDuration: 240
-  waveDuration: 60
-  restDuration: 10
-  customersPerWave: 3
-  customerSpawnInterval: 5
 --- !u!4 &1324766948
 Transform:
   m_ObjectHideFlags: 0
@@ -62171,6 +62167,10 @@ PrefabInstance:
       propertyPath: animator
       value: 
       objectReference: {fileID: 1674546952}
+    - target: {fileID: -2840140460936837893, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: moveSpeed
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.773
@@ -62210,6 +62210,10 @@ PrefabInstance:
     - target: {fileID: 366545763665601333, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4042540969063581805, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
+      propertyPath: m_Speed
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6293381563903558607, guid: b25454b1aa94bf447a13c47344129d62, type: 3}
       propertyPath: m_Name
@@ -70107,7 +70111,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1926608558
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -81067,11 +81071,9 @@ SceneRoots:
   - {fileID: 80780444}
   - {fileID: 1267689747}
   - {fileID: 72742696}
+  - {fileID: 1674546951}
   - {fileID: 283217290}
   - {fileID: 2066135791}
   - {fileID: 1535410341}
   - {fileID: 1182398586}
   - {fileID: 409144113}
-  - {fileID: 627131336}
-  - {fileID: 362042852}
-  - {fileID: 1674546951}

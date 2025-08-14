@@ -2,7 +2,7 @@
 * File: MainMenuManager.cs
 * Author: Javier, Zenon, Joel
 * Created: 9 August 2025
-* Description: Manages the main menu UI and handles user interactions.
+* Description: Manages the main menu UI and handles user interactions, as well as handles the game tutorial.
 ******************************************************************************/
 
 using UnityEngine;
@@ -28,8 +28,7 @@ public class MainMenuManager : MonoBehaviour
     private UnityEngine.UI.Image tutorialImage; // Image component to display slides
     [SerializeField]
     private Sprite[] tutorialSlides; // Array of tutorial images
-    [SerializeField]
-    private UnityEngine.UI.Text slideCounterText; // Optional: shows "1/5" etc.
+    // Slide counter text removed
 
     private int currentSlideIndex = 0;
     private bool inTutorialMode = false;
@@ -63,7 +62,7 @@ public class MainMenuManager : MonoBehaviour
             tutorialPanel.SetActive(false);
         }
 
-        // Automatically assign button functions
+        // Assign button functions
         if (startButton != null)
             startButton.onClick.AddListener(StartGame);
             
@@ -122,8 +121,6 @@ public class MainMenuManager : MonoBehaviour
     /// </summary>
     public void StartTutorial()
     {
-        Debug.Log("Starting tutorial slideshow...");
-        
         if (tutorialSlides == null || tutorialSlides.Length == 0)
         {
             Debug.LogWarning("No tutorial slides assigned!");
@@ -177,14 +174,6 @@ public class MainMenuManager : MonoBehaviour
         {
             tutorialImage.sprite = tutorialSlides[currentSlideIndex];
         }
-
-        // Update slide counter if available
-        if (slideCounterText != null && tutorialSlides != null)
-        {
-            slideCounterText.text = $"{currentSlideIndex + 1}/{tutorialSlides.Length}";
-        }
-
-        Debug.Log($"Showing tutorial slide {currentSlideIndex + 1}/{tutorialSlides.Length}");
     }
 
     /// <summary>
@@ -192,8 +181,6 @@ public class MainMenuManager : MonoBehaviour
     /// </summary>
     private void ExitTutorial()
     {
-        Debug.Log("Exiting tutorial...");
-        
         inTutorialMode = false;
         currentSlideIndex = 0;
 
@@ -214,8 +201,6 @@ public class MainMenuManager : MonoBehaviour
     /// </summary>
     public void QuitGame()
     {
-        Debug.Log("Quitting game...");
-        
         #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
         #else

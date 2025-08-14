@@ -1,10 +1,10 @@
 /******************************************************************************
  * File: CameraSystem.cs
  * Author: Javier, Zenon, Joel
- * Created: [Insert Date]
+ * Created: 29 July 2025
  * Description: Manages switching between the main player camera and monitor cameras.
  *              Players can click on Monitor objects to view their respective cameras,
- *              and press ESC to return to the main camera view.
+ *              and press F to return to the main camera view.
  ******************************************************************************/
 
 using UnityEngine;
@@ -16,12 +16,12 @@ using Cinemachine;
 
 /// <summary>
 /// Handles switching between the main player camera and monitor cameras.
-/// Players click on Monitor objects to switch views and press ESC to return to main view.
+/// Players click on Monitor objects to switch views and press F to return to main view.
 /// </summary>
 public class CameraSystem : MonoBehaviour
 {
     /// <summary>
-    /// The main player camera that players return to when pressing ESC.
+    /// The main player camera that players return to when pressing F.
     /// </summary>
     [SerializeField] private Camera mainCamera;
 
@@ -32,7 +32,7 @@ public class CameraSystem : MonoBehaviour
 
     /// <summary>
     /// Array of texture objects that correspond to each camera.
-    /// These objects will be set to inactive when their camera is offline.
+    /// These objects will be set to inactive when the corresponding camera is offline.
     /// </summary>
     [SerializeField] private GameObject[] cameraTextureObjects;
 
@@ -151,7 +151,6 @@ public class CameraSystem : MonoBehaviour
         // Check if the camera is disabled
         if (gameManager != null && gameManager.IsCameraDisabled(monitorIndex))
         {
-            Debug.Log($"CameraSystem: Camera {monitorIndex + 1} is offline");
             gameManager.ShowCameraOfflinePopup();
             return;
         }
@@ -186,14 +185,11 @@ public class CameraSystem : MonoBehaviour
         // Lock camera movement by disabling the player object
         if (playerObject != null)
         {
-            Debug.Log($"Stopping player movement and disabling player object: {playerObject.name}");
-            
             // Stop all movement before disabling the player
             StopPlayerMovement();
             
-            // Then disable the GameObject
+            // Disabling the GameObject
             playerObject.SetActive(false);
-            Debug.Log("Player GameObject disabled - camera should be locked now");
         }
         else
         {
@@ -203,9 +199,6 @@ public class CameraSystem : MonoBehaviour
         // Enable free cursor movement in CCTV view
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        Debug.Log("Cursor unlocked for CCTV view");
-
-        Debug.Log($"Switched to monitor camera: {monitorCameras[monitorIndex].name}");
     }
 
     /// <summary>
@@ -239,13 +232,10 @@ public class CameraSystem : MonoBehaviour
         
         if (playerObject != null)
         {
-            Debug.Log($"Re-enabling player object: {playerObject.name}");
             playerObject.SetActive(true);
             
             // Clear any residual input after re-enabling
             StopPlayerMovement();
-            
-            Debug.Log("Player GameObject re-enabled - camera should be unlocked now");
         }
         else
         {
@@ -255,7 +245,6 @@ public class CameraSystem : MonoBehaviour
         // Restore cursor to first-person mode (locked and hidden)
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        Debug.Log("Cursor locked for first-person view");
 
         // Show crosshair when returning to main camera
         if (gameManager != null)
@@ -266,9 +255,6 @@ public class CameraSystem : MonoBehaviour
 
         // Reset state
         isViewingMonitor = false;
-        currentMonitorIndex = -1;
-
-        Debug.Log("Returned to main camera");
     }
 
     /// <summary>
@@ -300,8 +286,6 @@ public class CameraSystem : MonoBehaviour
     {
         if (playerObject == null) return;
 
-        Debug.Log("Stopping player movement...");
-
         // Clear StarterAssets input values
         var starterInput = playerObject.GetComponent<StarterAssetsInputs>();
         if (starterInput != null)
@@ -310,7 +294,6 @@ public class CameraSystem : MonoBehaviour
             starterInput.look = Vector2.zero;
             starterInput.jump = false;
             starterInput.sprint = false;
-            Debug.Log("Cleared StarterAssetsInputs");
         }
 
         // Stop CharacterController movement
@@ -318,7 +301,6 @@ public class CameraSystem : MonoBehaviour
         if (characterController != null)
         {
             characterController.Move(Vector3.zero);
-            Debug.Log("Stopped CharacterController movement");
         }
 
         // Stop any Rigidbody movement (if present)
@@ -327,10 +309,8 @@ public class CameraSystem : MonoBehaviour
         {
             rigidbody.linearVelocity = Vector3.zero;
             rigidbody.angularVelocity = Vector3.zero;
-            Debug.Log("Stopped Rigidbody movement");
         }
 
-        Debug.Log("Player movement stopped");
     }
 
     /// <summary>
@@ -500,7 +480,7 @@ public class CameraSystem : MonoBehaviour
             // Skip if this renderer is on the root object (we want child renderers)
             if (originalRenderer.transform == obj.transform) continue;
 
-            // Skip warning sign renderers - we don't want to highlight those
+            // Skip warning sign renderers so that they don't get highlighted
             if (originalRenderer.name.ToLower().Contains("warning") || 
                 originalRenderer.transform.name.ToLower().Contains("warning") ||
                 originalRenderer.name.ToLower().Contains("sign") ||
@@ -625,7 +605,6 @@ public class CameraSystem : MonoBehaviour
         if (textureObject != null)
         {
             textureObject.SetActive(active);
-            Debug.Log($"Camera {cameraIndex + 1} texture object set to: {(active ? "active" : "inactive")}");
         }
         else
         {
@@ -644,6 +623,5 @@ public class CameraSystem : MonoBehaviour
         {
             SetCameraTextureActive(i, true);
         }
-        Debug.Log("All camera texture objects restored to active");
     }
 }

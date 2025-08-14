@@ -1,7 +1,7 @@
 /******************************************************************************
 * File: CameraBehaviour.cs
 * Author: Javier, Zenon, Joel
-* Created: [Insert Date]
+* Created: 29 August 2025
 * Description: Handles raycasting from the currently active camera in a 
 *              multi-camera surveillance system. Supports mouse interaction
 *              detection and debug visualization for gameplay purposes.
@@ -62,7 +62,6 @@ public class CameraBehaviour : MonoBehaviour
             if (Physics.Raycast(ray, out hit, 100))
             {
                 Debug.Log("Hit: " + hit.collider.name);
-                // TODO: Add object interaction logic here
             }
         }
     }

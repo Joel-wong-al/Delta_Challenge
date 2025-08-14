@@ -19,7 +19,6 @@ public class CashierBehaviour : MonoBehaviour
 {
     // ===================== Cashier Settings =====================
     [Header("Cashier Settings")]
-    [SerializeField] private Transform startPosition; ///< Optional: where cashier returns to after apprehension
     [SerializeField] private float apprehendRange = 1.2f; ///< Distance at which cashier apprehends customer
 
     // ===================== Animation =====================
@@ -33,25 +32,15 @@ public class CashierBehaviour : MonoBehaviour
     private GameManager gameManager; ///< Reference to the GameManager
     private NavMeshAgent navAgent; ///< NavMeshAgent for movement
     private Queue<(GameObject, Thief)> apprehensionQueue = new Queue<(GameObject, Thief)>(); ///< Queue of customers to apprehend
-    
+
     void Start()
     {
         // Store original position
-        if (startPosition != null)
-        {
-            originalPosition = startPosition.position;
-            originalRotation = startPosition.rotation;
-            transform.position = originalPosition;
-            transform.rotation = originalRotation;
-        }
-        else
-        {
-            originalPosition = transform.position;
-            originalRotation = transform.rotation;
-        }
+        originalPosition = transform.position;
+        originalRotation = transform.rotation;
         
         // Find GameManager reference
-    gameManager = FindFirstObjectByType<GameManager>();
+        gameManager = FindFirstObjectByType<GameManager>();
         if (gameManager == null)
         {
             Debug.LogError("CashierBehaviour: GameManager not found!");
@@ -86,6 +75,9 @@ public class CashierBehaviour : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// Coroutine activates if player apprehends a customer whilst the cashier has not returned to the counter
+    /// </summary>
     private IEnumerator ProcessApprehensionQueue()
     {
         while (apprehensionQueue.Count > 0)
@@ -111,7 +103,7 @@ public class CashierBehaviour : MonoBehaviour
         int warningCount = thief.GetCurrentWarningCount();
         int thievesSpawnedToday = gameManager != null ? gameManager.GetThievesSpawnedToday() : 0;
         
-        // Start walking animation if animator exists
+        // Start walking animation
         if (animator != null)
         {
             animator.SetBool("IsWalking", true);

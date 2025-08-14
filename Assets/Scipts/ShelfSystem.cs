@@ -1,9 +1,9 @@
 /******************************************************************************
  * File: ShelfSystem.cs
  * Author: Javier, Zenon, Joel
- * Created: [Insert Date]
+ * Created: 4 August 2025
  * Description: Helper script for setting up shelf checkpoints and landmarks
- *              for the customer navigation system in Delta Challenge.
+ *              for the customer navigation system in the convenience store.
  ******************************************************************************/
 
 using UnityEngine;

@@ -1,7 +1,7 @@
 ﻿/******************************************************************************
  * File: Monitor.cs
  * Author: Javier, Zenon, Joel
- * Created: [Insert Date]
+ * Created: 1 August 2025
  * Description: Attached to in-game monitor/screen objects. Stores the camera index
  *              that this screen is linked to in the CameraSystem.
  ******************************************************************************/

@@ -1,9 +1,9 @@
 ﻿/******************************************************************************
  * File: SceneTransitionManager.cs
  * Author: Javier, Zenon, Joel
- * Created: [Insert Date]
+ * Created: 10 August 2025
  * Description: Handles scene transitions with fade effects and optional audio fading
- *              for the Delta Challenge game. Provides singleton access and smooth
+ *              for the game. Provides singleton access and smooth
  *              transitions between scenes and gameplay states.
  ******************************************************************************/
 using UnityEngine;
@@ -12,7 +12,7 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 
 /// <summary>
-/// Handles scene transitions with fade effects and optional audio fading for the Delta Challenge game.
+/// Handles scene transitions with fade effects and optional audio fading for the game.
 /// Provides singleton access and smooth transitions between scenes and gameplay states.
 /// </summary>
 public class SceneTransitionManager : MonoBehaviour

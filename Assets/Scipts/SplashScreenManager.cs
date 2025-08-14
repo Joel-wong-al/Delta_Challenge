@@ -1,9 +1,9 @@
 ﻿﻿/******************************************************************************
  * File: SplashScreenManager.cs
  * Author: Javier, Zenon, Joel
- * Created: [Insert Date]
+ * Created: 10 August 2025
  * Description: Manages the splash screen video, fade transitions, and skip logic
- *              for the Delta Challenge game startup. Handles video playback,
+ *              for the game startup. Handles video playback,
  *              user skip input, and smooth scene transitions to the main menu.
  ******************************************************************************/
 
@@ -11,11 +11,6 @@ using UnityEngine;
 using UnityEngine.Video;
 using UnityEngine.SceneManagement;
 using System.Collections;
-
-
-/// <summary>
-/// Manages the splash screen video, fade transitions, and skip logic for the Delta Challenge game startup.
-/// </summary>
 
 /// <summary>
 /// Manages the splash screen video, fade transitions, and skip logic for the Delta Challenge game startup.
@@ -30,8 +25,6 @@ public class SplashScreenManager : MonoBehaviour
 
     // ===================== Scene Management =====================
     [Header("Scene Management")]
-    [SerializeField] private int mainMenuSceneIndex = 1; ///< Build index of the main menu scene to load after splash.
-    [SerializeField] private bool allowSkip = true; ///< If true, allows the player to skip the splash screen.
     [SerializeField] private KeyCode skipKey = KeyCode.Space; ///< Key used to skip the splash screen.
 
     // ===================== Audio Settings =====================
@@ -84,10 +77,9 @@ public class SplashScreenManager : MonoBehaviour
     /// </summary>
     void Update()
     {
-        // Allow skipping splash screen if enabled and not already transitioning
-        if (allowSkip && !isTransitioning && Input.GetKeyDown(skipKey))
+        // Allow skipping splash screen if not already transitioning
+        if (!isTransitioning && Input.GetKeyDown(skipKey))
         {
-            Debug.Log("Splash screen skipped by user");
             SkipToMainMenu();
         }
 
@@ -203,11 +195,11 @@ public class SplashScreenManager : MonoBehaviour
         // Use smooth transition if available, otherwise load directly
         if (SceneTransitionManager.Instance != null)
         {
-            SceneTransitionManager.Instance.TransitionToScene(mainMenuSceneIndex, 1f);
+            SceneTransitionManager.Instance.TransitionToScene(1, 1f);
         }
         else
         {
-            SceneManager.LoadScene(mainMenuSceneIndex);
+            SceneManager.LoadScene(1);
         }
     }
 

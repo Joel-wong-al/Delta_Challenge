@@ -1,8 +1,8 @@
 /******************************************************************************
  * File: GameManager.cs
  * Author: Javier, Zenon, Joel
- * Created: [Insert Date]
- * Description: Central game controller for Delta Challenge. Manages game flow,
+ * Created: 29 July 2025
+ * Description: Central game controller for the gameplay. Manages game flow,
  *              day and wave progression, customer and thief spawning, UI updates,
  *              cutscenes, pause system, and player/camera management.
  ******************************************************************************/
@@ -36,7 +36,7 @@ public class DayRequirement
 
 
 /// <summary>
-/// Main game manager for Delta Challenge. Handles all game state, day and wave progression,
+/// Main game manager for the gameplay. Handles all game states, day and wave progression,
 /// customer and thief spawning, UI, cutscenes, pause, and player/camera management.
 /// </summary>
 public class GameManager : MonoBehaviour
@@ -106,13 +106,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private CameraSystem cameraSystem; ///< Reference to the camera system
     [SerializeField] private PlayerBehaviour playerBehaviour; ///< Reference to the player behaviour
 
-    // ===================== Gameplay Flow Variables =====================
-    [Header("Gameplay Settings")]
-    [SerializeField] private float dayDuration = 240f; ///< 4 minutes per day
-    [SerializeField] private float waveDuration = 60f; ///< 1 minute per wave
-    [SerializeField] private float restDuration = 10f; ///< 10 seconds rest between waves
-    [SerializeField] private int customersPerWave = 4; ///< Number of customers per wave
-    [SerializeField] private float customerSpawnInterval = 5f; ///< Time between customer spawns in a wave
+    // Gameplay settings (hidden from Inspector)
+    private float dayDuration = 240f; ///< 4 minutes per day
+    private float waveDuration = 60f; ///< 1 minute per wave
+    private float restDuration = 10f; ///< 10 seconds rest between waves
+    private int customersPerWave = 4; ///< Number of customers per wave
+    private float customerSpawnInterval = 5f; ///< Time between customer spawns in a wave
 
     // ===================== Game State =====================
     private int currentDay = 1; ///< Current day number
@@ -234,15 +233,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        // Handle day progression input (works even when game is not active, but not when paused)
-        if (!isPaused && Input.GetKeyDown(KeyCode.G))
-        {
-            if (!dayComplete)
-            {
-            }
-        }
-        
-    // DEBUG: Press K to toggle 10x speed (works even when game is not active, but not when paused)
+        // DEBUG: Press K to toggle 10x speed (works even when game is not active, but not when paused)
         if (!isPaused && Input.GetKeyDown(KeyCode.K))
         {
             isSpeedBoostActive = !isSpeedBoostActive;
@@ -278,32 +269,38 @@ public class GameManager : MonoBehaviour
             EndDay();
         }
         
+        // Handle day progression input (works even when game is not active, but not when paused)
         if (!isPaused && dayComplete && Input.GetKeyDown(KeyCode.G))
         {
-            
+            // Handle G key after day completion:
+            // - If requirements not met, restart the day
+            // - If all days complete, return to main menu
+            // - Otherwise, proceed to next day
+
             // Hide the end of day panel first
             if (endOfDayPanel != null)
                 endOfDayPanel.SetActive(false);
-                
-            // Check if day was passed to determine action
+
+            // Check if the player met the requirements for the day
             bool dayPassed = CheckDayRequirements();
-            
+
             if (!dayPassed)
             {
-                // Day failed, restart current day
+                // Requirements not met: restart the current day
                 RestartDay();
             }
             else if (gameCompleted)
             {
-                // Game completed, go to main menu with transition
-                
+                // All days complete: return to main menu
                 // Ensure cursor is unlocked for main menu
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
-                
+
                 if (SceneTransitionManager.Instance != null)
                 {
-                    SceneTransitionManager.Instance.FadeTransition(2f, 1f, () => {
+                    // Use fade transition if available
+                    SceneTransitionManager.Instance.FadeTransition(2f, 1f, () =>
+                    {
                         UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
                     });
                 }
@@ -316,7 +313,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                // Day passed, go to next day
+                // Requirements met and game not complete: go to next day
                 NextDay();
             }
         }
@@ -364,7 +361,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Update UI
-    UpdateUI();
+        UpdateUI();
         UpdateSunRotation();
     }
 
@@ -374,8 +371,7 @@ public class GameManager : MonoBehaviour
     /// Starts a new day with fresh parameters.
     /// </summary>
     private void StartDay()
-    {
-        
+    { 
         // Reset day variables
         dayTimer = 0f;
         waveTimer = 0f;
@@ -402,14 +398,13 @@ public class GameManager : MonoBehaviour
             cameraSystem.RestoreAllCameraTextures();
 
         // Update UI immediately with new day values
-    UpdateUI();
+        UpdateUI();
 
         // Reset sun to starting position (night time) for the new day
         ResetSunPosition();
 
         // Configure day-specific settings (including thief count)
         ConfigureDaySettings();
-        
         
         // Randomly distribute thieves across waves
         DistributeThievesAcrossWaves();
@@ -426,7 +421,8 @@ public class GameManager : MonoBehaviour
         // Disable a random camera for days 4 and 5
         DisableRandomCamera();
         
-    UpdateUI();
+        // Reset UI again
+        UpdateUI();
     }
 
     /// <summary>
@@ -496,8 +492,9 @@ public class GameManager : MonoBehaviour
             thievesPerWave[wave] = 0;
         }
         
+        // Randomly distribute thieves across waves
         int remainingThieves = thiefCountForDay;
-        
+                
         while (remainingThieves > 0)
         {
             // Get all waves that can still accommodate thieves (less than 2)
@@ -526,7 +523,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void EndDay()
     {
-        
+        // Set end of day state
         dayComplete = true;
         gameActive = false;
         
@@ -888,7 +885,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void StartWave()
     {
-    // int thievesForThisWave = thievesPerWave.ContainsKey(currentWave) ? thievesPerWave[currentWave] : 0;
+        // int thievesForThisWave = thievesPerWave.ContainsKey(currentWave) ? thievesPerWave[currentWave] : 0;
         
         isInWave = true;
         isResting = false;
@@ -963,8 +960,6 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void EndWave()
     {
-        Debug.Log($"=== WAVE {currentWave} COMPLETE ===");
-        
         isInWave = false;
         
         // Make all customers leave the store
@@ -973,7 +968,6 @@ public class GameManager : MonoBehaviour
         if (currentWave >= 4)
         {
             // Last wave of the day - start final break
-            Debug.Log("Starting final break after wave 4");
             isFinalBreak = true;
             isResting = true;
             restTimer = 0f;
@@ -985,7 +979,7 @@ public class GameManager : MonoBehaviour
         isResting = true;
         restTimer = 0f;
         
-    UpdateUI();
+        UpdateUI();
     }
 
     /// <summary>
@@ -1054,7 +1048,6 @@ public class GameManager : MonoBehaviour
                 // Check if customer is close to exit point
                 if (Vector3.Distance(customer.transform.position, exitPoint.position) < 2f)
                 {
-                    Debug.Log($"Customer {customer.name} reached exit successfully");
                     break;
                 }
                 
@@ -1064,7 +1057,6 @@ public class GameManager : MonoBehaviour
                     stuckTimer += Time.deltaTime;
                     if (stuckTimer > 3f)
                     {
-                        Debug.Log($"Customer {customer.name} appears stuck, teleporting to exit");
                         customer.transform.position = exitPoint.position;
                         break;
                     }
@@ -1081,7 +1073,6 @@ public class GameManager : MonoBehaviour
             
             if (timer >= timeout)
             {
-                Debug.Log($"Customer {customer.name} timed out, forcing to exit");
                 customer.transform.position = exitPoint.position;
             }
         }
@@ -1109,7 +1100,6 @@ public class GameManager : MonoBehaviour
             // Thief escaped - penalty
             playerScore -= 100;
             thiefsEscapedToday.Add($"Thief #{thievesSpawnedToday} (escaped)");
-            Debug.Log($"Thief escaped! -100 points. Trust Fund: {playerScore}");
             
             // Update UI immediately to reflect the new score
             UpdateUI();
@@ -1155,18 +1145,19 @@ public class GameManager : MonoBehaviour
         int randomPrefabIndex;
         int attempts = 0;
         int maxAttempts = customerPrefabs.Length * 2; // Prevent infinite loops
-        
+
         do
         {
             randomPrefabIndex = Random.Range(0, customerPrefabs.Length);
             attempts++;
-            
+
             // If we've tried too many times or no used list provided, just use any prefab
             if (attempts >= maxAttempts || usedPrefabIndices == null)
             {
                 break;
             }
         }
+        
         while (usedPrefabIndices.Contains(randomPrefabIndex));
         
         // Add this prefab to the used list if provided
@@ -1193,8 +1184,6 @@ public class GameManager : MonoBehaviour
             
             // Add to active customers list
             activeCustomers.Add(newCustomer);
-            
-            Debug.Log($"Spawned new customer ({selectedPrefab.name}): {(forceThief ? "THIEF" : "REGULAR")}");
         }
         else
         {
@@ -1302,8 +1291,6 @@ public class GameManager : MonoBehaviour
             playerScore += 100;
             thievesCaughtToday++;
             thiefsCaughtToday.Add($"Thief #{thievesSpawnedNumber} (confirmed, 3 warnings)");
-            Debug.Log($"CORRECT! Apprehended confirmed thief. +100 points. Trust Fund: {playerScore}");
-            ShowFeedback("CORRECT! Thief Apprehended! +100 points", Color.green);
             
             // Update UI immediately to reflect the new thief count
             UpdateUI();
@@ -1314,8 +1301,6 @@ public class GameManager : MonoBehaviour
             playerScore -= 50;
             thievesCaughtToday++;
             thiefsCaughtToday.Add($"Thief #{thievesSpawnedNumber} (early arrest, {warningCount} warnings)");
-            Debug.Log($"PARTIAL! Apprehended thief early ({warningCount} warnings). -50 points. Trust Fund: {playerScore}");
-            ShowFeedback($"EARLY ARREST! Only {warningCount} warnings! -50 points", Color.yellow);
             
             // Update UI immediately to reflect the new thief count
             UpdateUI();
@@ -1324,8 +1309,6 @@ public class GameManager : MonoBehaviour
         {
             // Apprehended innocent with some warnings  
             playerScore -= 50;
-            Debug.Log($"WRONG! Apprehended innocent with {warningCount} warnings. -50 points. Trust Fund: {playerScore}");
-            ShowFeedback($"WRONG! Innocent with {warningCount} warnings! -50 points", Color.yellow);
             
             // Update UI immediately to reflect the new score
             UpdateUI();
@@ -1334,8 +1317,6 @@ public class GameManager : MonoBehaviour
         {
             // Completely innocent customer (0 warnings)
             playerScore -= 100;
-            Debug.Log($"WRONG! Apprehended innocent customer. -100 points. Trust Fund: {playerScore}");
-            ShowFeedback("WRONG! Innocent Customer! -100 points", Color.red);
             
             // Update UI immediately to reflect the new score
             UpdateUI();
@@ -1374,7 +1355,6 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void OnReleaseCustomer()
     {
-        Debug.Log("Apprehension canceled - customer continues shopping");
         HideApprehensionUI();
     }
 
@@ -1505,8 +1485,6 @@ public class GameManager : MonoBehaviour
             
             // Set to night time intensity
             directionalLight.intensity = 0.2f;
-            
-            Debug.Log("Sun position reset to night time for new day");
         }
     }
 
@@ -1544,21 +1522,14 @@ public class GameManager : MonoBehaviour
     /// <param name="dayPassed">Whether the player passed the day</param>
     private void ShowEndOfDayPanel(bool dayPassed)
     {
-        Debug.Log($"=== SHOWING END OF DAY PANEL ===");
-        Debug.Log($"Day passed: {dayPassed}");
-        Debug.Log($"endOfDayPanel null: {endOfDayPanel == null}");
-        Debug.Log($"summaryText null: {summaryText == null}");
-        
         if (endOfDayPanel != null)
         {
             endOfDayPanel.SetActive(true);
-            Debug.Log("End of day panel activated");
             
             if (summaryText != null)
             {
                 string summary = GenerateDaySummary(dayPassed);
                 summaryText.text = summary;
-                Debug.Log("Summary text updated");
             }
             else
             {
@@ -1568,9 +1539,6 @@ public class GameManager : MonoBehaviour
         else
         {
             Debug.LogWarning("endOfDayPanel is null - assign it in the Inspector!");
-            // Fallback: Show summary in console
-            string summary = GenerateDaySummary(dayPassed);
-            Debug.Log($"DAY SUMMARY (UI not assigned):\n{summary}");
         }
     }
 
@@ -1617,17 +1585,6 @@ public class GameManager : MonoBehaviour
         return summary;
     }
 
-    /// <summary>
-    /// Shows feedback message to player (placeholder for future UI implementation).
-    /// </summary>
-    /// <param name="message">Feedback message</param>
-    /// <param name="color">Message color</param>
-    private void ShowFeedback(string message, Color color)
-    {
-        
-        Debug.Log($"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{message}</color>");
-    }
-
     #endregion
 
     #region Camera Management
@@ -1649,9 +1606,6 @@ public class GameManager : MonoBehaviour
         
         // Deactivate the texture object for the disabled camera
         cameraSystem.SetCameraTextureActive(randomCamera, false);
-        
-        ShowFeedback($"Security Camera {randomCamera + 1} has malfunctioned!", Color.red);
-        Debug.Log($"Camera {randomCamera + 1} has been disabled for Day {currentDay}");
     }
 
     /// <summary>
@@ -1666,8 +1620,6 @@ public class GameManager : MonoBehaviour
         // Restore all camera texture objects to active
         if (cameraSystem != null)
             cameraSystem.RestoreAllCameraTextures();
-        
-        Debug.Log("All cameras restored to working condition");
     }
 
     /// <summary>
@@ -1743,8 +1695,6 @@ public class GameManager : MonoBehaviour
         
         if (pauseMenuPanel != null)
             pauseMenuPanel.SetActive(true);
-            
-        Debug.Log("Game paused - all controls disabled");
     }
 
     /// <summary>
@@ -1769,8 +1719,6 @@ public class GameManager : MonoBehaviour
         
         if (pauseMenuPanel != null)
             pauseMenuPanel.SetActive(false);
-            
-        Debug.Log("Game resumed - all controls enabled");
     }
 
     /// <summary>
@@ -1810,8 +1758,6 @@ public class GameManager : MonoBehaviour
             // Don't disable CharacterController as it might cause physics issues
             // Just let FirstPersonController being disabled handle the movement
         }
-
-        Debug.Log("Player controls disabled");
     }
 
     /// <summary>
@@ -1834,8 +1780,6 @@ public class GameManager : MonoBehaviour
         {
             starterInputs.enabled = true;
         }
-
-        Debug.Log("Player controls enabled");
     }
 
     /// <summary>
@@ -1852,8 +1796,6 @@ public class GameManager : MonoBehaviour
         {
             playerBehaviour.enabled = false;
         }
-
-        Debug.Log("Camera switching disabled");
     }
 
     /// <summary>
@@ -1870,8 +1812,6 @@ public class GameManager : MonoBehaviour
         {
             playerBehaviour.enabled = true;
         }
-
-        Debug.Log("Camera switching enabled");
     }
 
     /// <summary>
@@ -1937,16 +1877,12 @@ public class GameManager : MonoBehaviour
         
         if (cameraSystem != null)
         {
-            Debug.Log("Calling ReturnToMainCamera from respawn...");
             cameraSystem.ReturnToMainCamera();
-            Debug.Log("Camera returned to main view");
         }
         else
         {
             Debug.LogWarning("CameraSystem not found for camera reset!");
         }
-
-        Debug.Log($"Player respawned at position: {playerSpawnPoint.position}");
     }
 
     /// <summary>
@@ -1979,13 +1915,11 @@ public class GameManager : MonoBehaviour
         if (cctvVolume != null)
         {
             cctvVolume.enabled = true;
-            Debug.Log("CCTV post-processing effects enabled");
         }
 
         if (firstPersonVolume != null)
         {
             firstPersonVolume.enabled = false;
-            Debug.Log("First-person post-processing effects disabled");
         }
     }
 
@@ -1997,13 +1931,11 @@ public class GameManager : MonoBehaviour
         if (firstPersonVolume != null)
         {
             firstPersonVolume.enabled = true;
-            Debug.Log("First-person post-processing effects enabled");
         }
 
         if (cctvVolume != null)
         {
             cctvVolume.enabled = false;
-            Debug.Log("CCTV post-processing effects disabled");
         }
     }
 
@@ -2020,8 +1952,6 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void OnMainMenuButton()
     {
-        Debug.Log("Main Menu button pressed");
-        
         // Properly restore game state before loading main menu
         if (isPaused)
         {

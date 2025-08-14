@@ -1,11 +1,11 @@
 ﻿/******************************************************************************
  * File: Thief.cs
  * Author: Javier, Zenon, Joel
- * Created: [Insert Date]
- * Description: Controls the behavior of customer NPCs and thieves. Includes logic for
+ * Created: 29 July 2025
+ * Description: Controls the behavior of customer and thief NPCs. Includes logic for
  *              navigating to random shelves, showing warning signs, and determining
  *              thief status based on warning count. Handles navigation, animation,
- *              warning system, and forced exit logic for the Delta Challenge game.
+ *              warning system, and forced exit logic for the game.
  ******************************************************************************/
 
 using UnityEngine;
@@ -151,12 +151,10 @@ public class Thief : MonoBehaviour
         if (IsThief)
         {
             totalWarningsToShow = 3;
-            Debug.Log($"Customer {gameObject.name} initialized as THIEF - will show 3 warnings");
         }
         else
         {
             totalWarningsToShow = Random.Range(0, 3);
-            Debug.Log($"Customer {gameObject.name} initialized as REGULAR CUSTOMER - will show {totalWarningsToShow} warnings");
         }
         
         // Find shelf checkpoints and landmarks
@@ -399,19 +397,11 @@ public class Thief : MonoBehaviour
         if (warningSign != null)
             warningSign.SetActive(true);
 
-        Debug.Log($"Customer {gameObject.name} showing warning {currentWarningCount}/{totalWarningsToShow}");
-
         yield return new WaitForSeconds(3f); // Show warning for 3 seconds
 
         IsShowingWarning = false;
         if (warningSign != null)
             warningSign.SetActive(false);
-
-        // If this customer has shown 3 warnings, they are confirmed as a thief
-        if (currentWarningCount >= 3)
-        {
-            Debug.Log($"Customer {gameObject.name} is now CONFIRMED THIEF (3+ warnings)");
-        }
     }
 
     /// <summary>
@@ -513,7 +503,6 @@ public class Thief : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"Failed to set exit destination for {gameObject.name}");
                 // Fallback: teleport to exit if pathfinding fails
                 transform.position = exitPoint.position;
             }

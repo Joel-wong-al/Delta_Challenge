@@ -1,8 +1,8 @@
 ﻿/******************************************************************************
  * File: PlayerBehaviour.cs
  * Author: Javier, Zenon, Joel
- * Created: [Insert Date]
- * Description: Handles first-person player input for monitor interaction in Delta Challenge.
+ * Created: 30 July 2025
+ * Description: Handles first-person player input for monitor interaction during gameplay.
  *              Only allows clicking on monitors to switch cameras; no customer interaction.
  ******************************************************************************/
 
@@ -57,7 +57,6 @@ public class PlayerBehaviour : MonoBehaviour
                 Monitor screen = hit.collider.GetComponent<Monitor>();
                 if (screen != null)
                 {
-                    Debug.Log("Clicked monitor for camera index: " + screen.cameraIndex);
                     CameraSystem cameraSystem = FindFirstObjectByType<CameraSystem>();
                     if (cameraSystem != null)
                     {
