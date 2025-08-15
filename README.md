@@ -255,7 +255,7 @@ To succeed:
 
 ---
 
-## 8.Limitations / Known Bugs
+## 8. Limitations / Known Bugs
 
 - SFX does not play in the build version
 - Customers may occasionally get stuck despite avoidance logic.
@@ -263,7 +263,7 @@ To succeed:
 
 ---
 
-## 9.Platforms / Hardware Requirements
+## 9. Platforms / Hardware Requirements
 
 - **Engine:** Unity
 
