@@ -167,6 +167,10 @@ public class GameManager : MonoBehaviour
     // ===================== Final break period after last wave =====================
     private bool isFinalBreak = false; ///< Is the game in the final break period?
 
+    // Track trust fund for each day
+    private List<int> trustFundPerDay = new List<int>();
+    private bool showFinalSummary = false;
+
     void Start()
     {
         // Ensure popup is hidden at start
@@ -272,33 +276,22 @@ public class GameManager : MonoBehaviour
         // Handle day progression input (works even when game is not active, but not when paused)
         if (!isPaused && dayComplete && Input.GetKeyDown(KeyCode.G))
         {
-            // Handle G key after day completion:
-            // - If requirements not met, restart the day
-            // - If all days complete, return to main menu
-            // - Otherwise, proceed to next day
-
-            // Hide the end of day panel first
-            if (endOfDayPanel != null)
-                endOfDayPanel.SetActive(false);
-
-            // Check if the player met the requirements for the day
-            bool dayPassed = CheckDayRequirements();
-
-            if (!dayPassed)
+            // If on day 5 and game completed, show trust fund summary first
+            if (currentDay >= 5 && gameCompleted && !showFinalSummary)
             {
-                // Requirements not met: restart the current day
-                RestartDay();
+                showFinalSummary = true;
+                ShowEndOfDayPanel(true);
+                return;
             }
-            else if (gameCompleted)
+            // If already showing final summary, next G returns to main menu
+            if (showFinalSummary)
             {
-                // All days complete: return to main menu
+                showFinalSummary = false;
                 // Ensure cursor is unlocked for main menu
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
-
                 if (SceneTransitionManager.Instance != null)
                 {
-                    // Use fade transition if available
                     SceneTransitionManager.Instance.FadeTransition(2f, 1f, () =>
                     {
                         UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
@@ -306,14 +299,40 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    // Fallback if no transition manager
+                    UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+                }
+                return;
+            }
+            // Otherwise, normal end-of-day logic
+            if (endOfDayPanel != null)
+                endOfDayPanel.SetActive(false);
+
+            bool dayPassed = CheckDayRequirements();
+
+            if (!dayPassed)
+            {
+                RestartDay();
+            }
+            else if (gameCompleted)
+            {
+                // This will only be hit for days < 5
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                if (SceneTransitionManager.Instance != null)
+                {
+                    SceneTransitionManager.Instance.FadeTransition(2f, 1f, () =>
+                    {
+                        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+                    });
+                }
+                else
+                {
                     UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
                 }
                 return;
             }
             else
             {
-                // Requirements met and game not complete: go to next day
                 NextDay();
             }
         }
@@ -548,6 +567,12 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            // Store trust fund for the day
+            if (trustFundPerDay.Count < currentDay)
+                trustFundPerDay.Add(playerScore);
+            else if (trustFundPerDay.Count == currentDay)
+                trustFundPerDay[currentDay - 1] = playerScore;
+
             ShowSummaryPanelAfterCutscene();
         }
     }
@@ -1525,11 +1550,32 @@ public class GameManager : MonoBehaviour
         if (endOfDayPanel != null)
         {
             endOfDayPanel.SetActive(true);
-            
             if (summaryText != null)
             {
-                string summary = GenerateDaySummary(dayPassed);
-                summaryText.text = summary;
+                // If day 5 and game completed, show normal summary first
+                if (currentDay >= 5 && dayPassed && !showFinalSummary)
+                {
+                    string summary = GenerateDaySummary(dayPassed);
+                    summary += "\n\nPress G to view the game summary.";
+                    summaryText.text = summary;
+                }
+                // If showing final summary, show trust fund for each day and quote
+                else if (showFinalSummary)
+                {
+                    string summary = "=== TRUST FUND SUMMARY ===\n\n";
+                    for (int i = 0; i < trustFundPerDay.Count; i++)
+                    {
+                        summary += $"Day {i + 1}: {trustFundPerDay[i]} points\n";
+                    }
+                    summary += "\n<color=yellow>\"Shoplifting isn’t worth the risk — protect your future, choose the right path.\"</color>";
+                    summary += "\n\nPress G to return to Main Menu.";
+                    summaryText.text = summary;
+                }
+                else
+                {
+                    string summary = GenerateDaySummary(dayPassed);
+                    summaryText.text = summary;
+                }
             }
             else
             {
@@ -1575,7 +1621,7 @@ public class GameManager : MonoBehaviour
         }
         else if (currentDay >= 5)
         {
-            summary += "CONGRATULATIONS! You've completed all 5 days!\n\nPress G to return to Main Menu.";
+            summary += "CONGRATULATIONS! You've completed all 5 days!";
         }
         else
         {
