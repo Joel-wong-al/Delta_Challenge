@@ -146,9 +146,146 @@ A first-person convenience store simulation where players act as a night-shift c
 - **Implementation Details:**
     - Controlled by CashierBehaviour.cs. Waits at the counter until given a target via the CCTV system, moves to apprehend the suspect, and returns to the counter afterwards.
 
+### 5.2 CCTV & Apprehension Pipeline
+**Scripts:** CameraSystem.cs, CameraBehaviour.cs, PlayerBehaviour.cs, Monitor.cs
+**Purpose:** Allows players to monitor the store through CCTV feeds, identify suspicious individuals, and request apprehension.
 
+- **Key Features:**
 
+    - Click on a monitor in first-person view to switch to its linked CCTV camera.
 
+    - Switch between CCTV cameras using input keys (if enabled).
 
+    - In CCTV mode, raycast from the cursor to highlight NPCs in view.
+
+    - Click on a highlighted customer to send an apprehension request to the Cashier NPC.
+
+    - Supports difficulty scaling by disabling certain cameras on later days.
+
+### 5.3 Player Controller & Input Handling
+**Script:** PlayerBehaviour.cs
+**Purpose:** Manages player interactions and ensures input is responsive only when appropriate.
+
+- **Key Features:**
+
+    - Uses raycasting from the player camera to detect interactive objects (monitors, NPCs).
+
+    - Prevents interactions when the game is paused via GameManager.IsPaused().
+
+    - Handles camera return from CCTV to first-person view.
+
+### 5.4 Environment Navigation Helpers
+**Script:** ShelfSystem.cs
+**Purpose:** Defines key navigation points for NPC behaviour.
+
+- **Key Features:**
+
+    - ShelfCheckpoint → NPC walking destinations.
+
+    - ShelfLandmark → Look-at points for NPC browsing animations.
+
+    - In-editor Gizmos make shelf layout and navigation testing easier.
+
+### 5.5 Sliding Entrance Doors
+**Script:** SlidingDoor.cs
+**Purpose:** Provides realistic, automated entrance/exit doors for the store.
+
+- **Key Features:**
+
+    - Opens when a Customer-tagged object enters the detection radius.
+
+    - Smooth open/close animation using position lerping.
+
+    - Visual detection radius displayed in the Unity editor for easy adjustment.
+
+### 5.6 Scene & UI Flow
+**Script:** SplashScreenManager.cs, MainMenuManager.cs, SceneTransitionManager.cs
+**Purpose:** Controls all game scenes, menus, and transitions.
+
+- **Key Features:**
+
+    - Splash Screen: Plays intro video with optional skip (Space key).
+
+    - Main Menu: Start Game, Tutorial slideshow (advance with G), Quit; optional animated camera background.
+
+    - Scene Transitions: Smooth fade effects with audio fade-out; supports level changes by index or name; holds fade for multi-day transitions.
+
+### 5.7 Core Game Flow
+**Script:** GameManager.cs
+**Purpose:** Oversees game rules, NPC interactions, and progression.
+
+- **Key Features:**
+
+    - Tracks caught vs. escaped thieves per day.
+
+    - Processes apprehension results from CCTV.
+
+    - Manages pause menu and game state transitions.
+
+    - Integrates day/wave progression with difficulty scaling.
+
+### 5.8 Code Quality & Debugging Tools
+**Purpose:** Maintain clarity and testability during development.
+
+- **Key Features:**
+
+    - All scripts contain file headers and XML documentation.
+
+    - Gizmos in scripts like ShelfSystem and SlidingDoor assist in debugging navigation and triggers.
+
+    - Console warnings for missing references or invalid configurations.
+
+---
+
+## 7. Puzzle Answer Key
+
+The game does not contain traditional puzzles. The main challenge is observing behaviour and accurately identifying thieves under time pressure.
+
+To succeed:
+
+- 1. Monitor all customers via CCTV.
+
+- 2. Count warning signs to confirm thieves.
+
+- 3. Apprehend only confirmed thieves.
+
+- 4. Avoid false accusations to maintain trust fund.
+
+- 5. Meet daily performance thresholds to progress.
+
+---
+
+## 8.Limitations / Known Bugs
+
+- SFX does not play in the build version
+- Customers may occasionally get stuck despite avoidance logic.
+- UI does not scale properly to certain aspect ratio.
+
+---
+
+## 9.Platforms / Hardware Requirements
+
+- **Engine:** Unity
+
+- **Platform:** Windows PC
+
+## 10. Assets, References & Credits
+
+### SFX
+- Click: https://pixabay.com/sound-effects/click-21156
+- Day Complete: https://pixabay.com/sound-effects/purchase-success-384963
+- Camear Open and close: https://pixabay.com/sound-effects/canon-40d-camera-shutter-85733
+- Caught Correct: https://pixabay.com/sound-effects/c-371145 
+- Wrong: https://pixabay.com/sound-effects/wronganswer-37702
+
+### Unity Assets Store
+- First Person: https://assetstore.unity.com/packages/essentials/starter-assets-firstperson-updates-in-new-charactercontroller-pa-196525
+- NPCs: https://assetstore.unity.com/packages/3d/characters/hyper-casual-human-characters-305473
+
+### Tutorials
+- Changing camera: https://www.youtube.com/watch?v=0t_3Yer6Mng&list=WL&index=8&t=2s
+
+### Usage of AI
+- Co-Pilot: Writing XML, Refinement of code
 
 
