@@ -106,6 +106,15 @@ public class GameManager : MonoBehaviour
     [SerializeField] private CameraSystem cameraSystem; ///< Reference to the camera system
     [SerializeField] private PlayerBehaviour playerBehaviour; ///< Reference to the player behaviour
 
+    // ===================== Audio =====================
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip dayCompleteClip;
+    [SerializeField] private AudioClip correctApprehensionClip;
+    [SerializeField] private AudioClip wrongApprehensionClip;
+    [SerializeField] private AudioClip enterCameraClip;
+    [SerializeField] private AudioClip exitCameraClip;
+
     // Gameplay settings (hidden from Inspector)
     private float dayDuration = 240f; ///< 4 minutes per day
     private float waveDuration = 60f; ///< 1 minute per wave
@@ -575,6 +584,10 @@ public class GameManager : MonoBehaviour
 
             ShowSummaryPanelAfterCutscene();
         }
+        
+        // Play day complete sound
+        if (dayCompleteClip != null && audioSource != null)
+            audioSource.PlayOneShot(dayCompleteClip);
     }
 
     // Plays a cutscene for escaped thieves, then shows the summary panel
@@ -1319,6 +1332,9 @@ public class GameManager : MonoBehaviour
             
             // Update UI immediately to reflect the new thief count
             UpdateUI();
+            
+            if (correctApprehensionClip != null && audioSource != null)
+                audioSource.PlayOneShot(correctApprehensionClip);
         }
         else if (isActualThief && warningCount >= 1 && warningCount < 3)
         {
@@ -1345,6 +1361,9 @@ public class GameManager : MonoBehaviour
             
             // Update UI immediately to reflect the new score
             UpdateUI();
+            
+            if (wrongApprehensionClip != null && audioSource != null)
+                audioSource.PlayOneShot(wrongApprehensionClip);
         }
         
         // Remove customer from store and tracking
@@ -1962,11 +1981,13 @@ public class GameManager : MonoBehaviour
         {
             cctvVolume.enabled = true;
         }
-
         if (firstPersonVolume != null)
         {
             firstPersonVolume.enabled = false;
         }
+        // Play enter camera sound
+        if (enterCameraClip != null && audioSource != null)
+            audioSource.PlayOneShot(enterCameraClip);
     }
 
     /// <summary>
@@ -1978,11 +1999,13 @@ public class GameManager : MonoBehaviour
         {
             firstPersonVolume.enabled = true;
         }
-
         if (cctvVolume != null)
         {
             cctvVolume.enabled = false;
         }
+        // Play exit camera sound
+        if (exitCameraClip != null && audioSource != null)
+            audioSource.PlayOneShot(exitCameraClip);
     }
 
     /// <summary>

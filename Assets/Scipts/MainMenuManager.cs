@@ -48,6 +48,10 @@ public class MainMenuManager : MonoBehaviour
     private Vector3 originalRotation;
     private float rockingTimer;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip startGameClip;
+
     void Start()
     {
         // Store original camera rotation
@@ -105,6 +109,10 @@ public class MainMenuManager : MonoBehaviour
     
     public void StartGame()
     {
+        // Play start game sound
+        if (startGameClip != null && audioSource != null)
+            audioSource.PlayOneShot(startGameClip);
+
         // Use smooth transition instead of direct scene loading
         if (SceneTransitionManager.Instance != null)
         {
