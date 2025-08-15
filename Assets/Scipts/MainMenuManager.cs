@@ -52,6 +52,10 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip startGameClip;
 
+    [Header("BGM")]
+    [SerializeField] private AudioSource bgmSource;
+    [SerializeField] private AudioClip mainMenuBgmClip;
+
     void Start()
     {
         // Store original camera rotation
@@ -75,6 +79,14 @@ public class MainMenuManager : MonoBehaviour
             
         if (quitButton != null)
             quitButton.onClick.AddListener(QuitGame);
+
+        // Play main menu BGM if assigned
+        if (bgmSource != null && mainMenuBgmClip != null)
+        {
+            bgmSource.clip = mainMenuBgmClip;
+            bgmSource.loop = true;
+            bgmSource.Play();
+        }
     }
 
     void Update()

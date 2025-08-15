@@ -115,6 +115,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioClip enterCameraClip;
     [SerializeField] private AudioClip exitCameraClip;
 
+    // ===================== BGM =====================
+    [Header("BGM")]
+    [SerializeField] private AudioSource bgmSource;
+    [SerializeField] private AudioClip gameBgmClip;
+
     // Gameplay settings (hidden from Inspector)
     private float dayDuration = 240f; ///< 4 minutes per day
     private float waveDuration = 60f; ///< 1 minute per wave
@@ -213,6 +218,14 @@ public class GameManager : MonoBehaviour
 
         // Initialize post-processing effects (start with first-person)
         EnableFirstPersonEffects();
+
+        // Play game BGM if assigned
+        if (bgmSource != null && gameBgmClip != null)
+        {
+            bgmSource.clip = gameBgmClip;
+            bgmSource.loop = true;
+            bgmSource.Play();
+        }
 
         // Start the first day
         StartDay();

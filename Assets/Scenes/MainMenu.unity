@@ -56962,6 +56962,8 @@ MonoBehaviour:
   rockingAxis: {x: 1, y: 1, z: 0}
   audioSource: {fileID: 1982174954}
   startGameClip: {fileID: 8300000, guid: 44b08ab4534689c499e119c9f3ec2261, type: 3}
+  bgmSource: {fileID: 1982174954}
+  mainMenuBgmClip: {fileID: 8300000, guid: a67cff60819ea0946bd494d872d741f9, type: 3}
 --- !u!4 &1982174953
 Transform:
   m_ObjectHideFlags: 0

@@ -49690,6 +49690,8 @@ MonoBehaviour:
   wrongApprehensionClip: {fileID: 8300000, guid: fd5e4f9dbe3d844478a107ba9e366584, type: 3}
   enterCameraClip: {fileID: 8300000, guid: 044c473331766a3499df8428e3332c8c, type: 3}
   exitCameraClip: {fileID: 8300000, guid: 7359c28e95646e941beee50fdad77896, type: 3}
+  bgmSource: {fileID: 1324766949}
+  gameBgmClip: {fileID: 8300000, guid: a468edfad2101c34c9e57487f3d9fa9a, type: 3}
 --- !u!4 &1324766948
 Transform:
   m_ObjectHideFlags: 0
