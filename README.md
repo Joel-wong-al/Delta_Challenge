@@ -35,17 +35,17 @@ A first-person convenience store simulation where players act as a night-shift c
 ## 3. Controls
 
 ### Normal Gameplay
-*Movement* - W: Forward / S: Backward, / A: Go left / D: Go right - Player Movement
-*Look Around* - Mouse - First-person camera control
-*Interact with Monitor* - Left Mouse Click - Switch to CCTV camera view
-*Return to Main Camera* - F - Exit CCTV view
-*Apprehend Customers* - Y - Confirm apprehension
-*Cancel Apprehension* - N - Dismiss apprehension popup
-*Pause Menu* - Esc - Pause, Exit or Resume game
+- *Movement* - W: Forward / S: Backward, / A: Go left / D: Go right - Player Movement
+- *Look Around* - Mouse - First-person camera control
+- *Interact with Monitor* - Left Mouse Click - Switch to CCTV camera view
+- *Return to Main Camera* - F - Exit CCTV view
+- *Apprehend Customers* - Y - Confirm apprehension
+- *Cancel Apprehension* - N - Dismiss apprehension popup
+- *Pause Menu* - Esc - Pause, Exit or Resume game
 
 ### Hacks
-*Skip Day* - J - Move on to the next day
-*Speed Up* - K - Speed up the current wave
+- *Skip Day* - J - Move on to the next day
+- *Speed Up* - K - Speed up the current wave
 
 
 
