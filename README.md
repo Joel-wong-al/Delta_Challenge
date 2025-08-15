@@ -13,17 +13,17 @@
 - **Scripts** - All gameplay and system scripts for the project.
 - **Starter Assets** - First-person controller and related assets.
 - **Textures** - Image files used for materials and in-game assets (e.g., newspaper images).
-- **VFX** - Visual effects used in the game (e.g., Fridge Mist).
+- **VFX** - Folder housing the flickering light VFX effects.
 - **Videos** - Splash Screen at the start of the game.
 
 ---
 
 ## 2. Overview
 
-A first-person convenience store simulation where players act as a night-shift cashier to monitor customers via a CCTV system, identify suspicious activity, and apprehend shoplifters before they escape. The game integrates NPC AI, Unity’s Navigation System, raycasting-based interactions, and a day/wave progression system.
+A first-person convenience store simulation where players act as a night-shift security personnel to monitor customers via a CCTV system, identify suspicious activity, and apprehend shoplifters before they escape. The game integrates NPC AI, Unity’s Navigation System, raycasting-based interactions, and a day/wave progression system.
 
 **Core Features:**
-- NPCs with state-based AI (customers, Cashier & thieves) using FSM-like behavior.
+- NPCs with state-based AI (customers, cashier & thieves) using FSM-like behavior.
 - Unity NavMesh for pathfinding and dynamic movement.
 - Raycasting for monitor/Thief interaction and object highlighting.
 - Cashier NPC for in-store apprehension
@@ -43,7 +43,7 @@ A first-person convenience store simulation where players act as a night-shift c
 - **Cancel Apprehension** - N - Dismiss apprehension popup
 - **Pause Menu** - Esc - Pause, Exit or Resume game
 
-### Hacks
+### Cheats
 - **Skip Day** - J - Move on to the next day
 - **Speed Up** - K - Speed up the current wave
 - **Skip Splash Screen** - Space Bar - Skip the opening animation for our game
@@ -168,7 +168,7 @@ A first-person convenience store simulation where players act as a night-shift c
 
 - **Key Features:**
 
-    - Uses raycasting from the player camera to detect interactive objects (monitors, NPCs).
+    - Uses raycasting from the player camera to detect interactive objects (monitors).
 
     - Prevents interactions when the game is paused via GameManager.IsPaused().
 
@@ -206,7 +206,7 @@ A first-person convenience store simulation where players act as a night-shift c
 
     - Splash Screen: Plays intro video with optional skip (Space key).
 
-    - Main Menu: Start Game, Tutorial slideshow (advance with G), Quit; optional animated camera background.
+    - Main Menu: Start Game, Tutorial slideshow (advance with G), Quit; animated camera background.
 
     - Scene Transitions: Smooth fade effects with audio fade-out; supports level changes by index or name; holds fade for multi-day transitions.
 
@@ -237,9 +237,9 @@ A first-person convenience store simulation where players act as a night-shift c
 
 ---
 
-## 7. Puzzle Answer Key
+## 7. Game Guide
 
-The game does not contain traditional puzzles. The main challenge is observing behaviour and accurately identifying thieves under time pressure.
+The game's main challenge is observing customer behaviour and accurately identifying thieves under time pressure.
 
 To succeed:
 
@@ -251,13 +251,13 @@ To succeed:
 
 - 4. Avoid false accusations to maintain trust fund.
 
-- 5. Meet daily performance thresholds to progress.
+- 5. Meet daily performance thresholds to progress to the next day.
 
 ---
 
 ## 8. Limitations / Known Bugs
 
-- SFX does not play in the build version
+- Apprehension SFX does not play in the build version unless speed-up cheat is used
 - Customers may occasionally get stuck despite avoidance logic.
 - UI does not scale properly to certain aspect ratio.
 
@@ -280,7 +280,7 @@ To succeed:
 
 ### Unity Assets Store
 - First Person: https://assetstore.unity.com/packages/essentials/starter-assets-firstperson-updates-in-new-charactercontroller-pa-196525
-- NPCs: https://assetstore.unity.com/packages/3d/characters/hyper-casual-human-characters-305473
+- NPC models: https://assetstore.unity.com/packages/3d/characters/hyper-casual-human-characters-305473
 
 ### Tutorials
 - Changing camera: https://www.youtube.com/watch?v=0t_3Yer6Mng&list=WL&index=8&t=2s
