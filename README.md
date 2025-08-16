@@ -1,4 +1,4 @@
-# Combinight Shift – Delta Challenge 2025
+# Convinight Shift – Delta Challenge 2025
 ---
 ## 1.File Structure
 ### **Folder Organization:**
@@ -93,7 +93,7 @@ A first-person convenience store simulation where players act as a night-shift s
     - Any → Exit (forced by game flow)
 - **Implementation Details:**
     - Controlled by the Thief.cs script with customer settings. Moves between shelf checkpoints using NavMesh, occasionally shows warning signs, and exits when the day ends or told to leave.
-
+![Customer FSM](<Screenshot 2025-08-15 170935.png>)
 **Thief NPC — FSM**
 **Purpose:** Looks like a customer but escalates behaviour; “Stealing” is modeled as an elevated‑risk action and/or third warning that confirms guilt.
 - **States:**
@@ -124,7 +124,7 @@ A first-person convenience store simulation where players act as a night-shift s
     - Any → Exit (apprehended by Cashier or day ends)
 - **Implementation Details:**
     - Also controlled by the Thief.cs script with thief settings. Displays three warnings before being marked as a confirmed thief. Can be apprehended by the cashier or will exit if the day ends.
-
+![Thief FSM](<Screenshot 2025-08-15 170938.png>)
 **Cashier NPC — FSM**
 **Purpose:** Processes apprehension requests triggered from CCTV.
 - **States:** 
@@ -145,7 +145,7 @@ A first-person convenience store simulation where players act as a night-shift s
     - Returning → IdleAtCounter (reached counter; pull next request)
 - **Implementation Details:**
     - Controlled by CashierBehaviour.cs. Waits at the counter until given a target via the CCTV system, moves to apprehend the suspect, and returns to the counter afterwards.
-
+![Cashier FSM](<Screenshot 2025-08-15 170942.png>)
 ### 5.2 CCTV & Apprehension Pipeline
 **Scripts:** CameraSystem.cs, CameraBehaviour.cs, PlayerBehaviour.cs, Monitor.cs
 **Purpose:** Allows players to monitor the store through CCTV feeds, identify suspicious individuals, and request apprehension.
